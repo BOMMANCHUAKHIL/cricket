@@ -1,0 +1,540 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  :root {
+    --cosmic-purple: #6a00f4;
+    --cosmic-blue: #00f7ff;
+    --cosmic-pink: #ff00f7;
+    --dark-space: #0a0e17;
+    --neon-text: #fff;
+  }
+
+
+
+  /* Cosmic Background Elements */
+  .cosmic-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+
+  .stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('https://assets.codepen.io/13471/stars.png') repeat;
+    animation: stars 120s linear infinite;
+  }
+
+  @keyframes stars {
+    0% { background-position: 0 0; }
+    100% { background-position: -1000px 1000px; }
+  }
+
+  .cosmic-glow {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background:
+      radial-gradient(circle at 30% 30%, var(--cosmic-purple), transparent 50%),
+      radial-gradient(circle at 70% 70%, var(--cosmic-blue), transparent 50%),
+      radial-gradient(circle at 50% 20%, var(--cosmic-pink), transparent 50%);
+    opacity: 0.15;
+    animation: cosmic-move 60s infinite alternate;
+  }
+
+  @keyframes cosmic-move {
+    0% { transform: translate(-25%, -25%); }
+    100% { transform: translate(-75%, -75%); }
+  }
+
+  .reorder-card {
+    position: relative;
+    max-width: 800px;
+    margin: 2rem auto;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 20px;
+    border: 1px solid rgba(0, 247, 255, 0.2);
+    box-shadow:
+      0 0 20px rgba(0, 247, 255, 0.2),
+      0 0 40px rgba(157, 0, 255, 0.15);
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1;
+  }
+
+  .reorder-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow:
+      0 0 30px rgba(0, 247, 255, 0.3),
+      0 0 60px rgba(157, 0, 255, 0.25);
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, var(--cosmic-purple), var(--cosmic-blue));
+    color: white;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .card-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    background: linear-gradient(90deg, var(--cosmic-blue), var(--cosmic-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .card-header::after {
+    content: "DRAG TO REORDER";
+    position: absolute;
+    right: 2rem;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    opacity: 0.7;
+    color: var(--cosmic-blue);
+    animation: pulse 2s infinite alternate;
+  }
+
+  @keyframes pulse {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+  }
+
+  #sortableList {
+    padding: 1.5rem;
+    margin: 0;
+  }
+
+  #sortableList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: grab;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+  }
+
+  #sortableList li:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 5px 20px rgba(0, 247, 255, 0.15);
+  }
+
+  #sortableList li.sortable-chosen {
+    cursor: grabbing;
+    background: rgba(0, 247, 255, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 247, 255, 0.25);
+    border: 1px solid rgba(0, 247, 255, 0.3);
+  }
+
+  #sortableList li.sortable-ghost {
+    opacity: 0.6;
+    background: rgba(0, 247, 255, 0.05);
+    border: 1px dashed rgba(0, 247, 255, 0.2);
+  }
+
+  .handle {
+    font-size: 1.5rem;
+    color: var(--cosmic-blue);
+    margin-right: 1.5rem;
+    cursor: grab;
+    text-shadow: 0 0 8px rgba(0, 247, 255, 0.5);
+    transition: all 0.3s ease;
+  }
+
+  #sortableList li:hover .handle {
+    transform: scale(1.2);
+    color: var(--cosmic-pink);
+  }
+
+  .member-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .position-badge {
+    min-width: 50px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--cosmic-purple), var(--cosmic-blue));
+    color: white;
+    padding: 0.5rem;
+    border-radius: 50%;
+    font-weight: 700;
+    margin-right: 1.5rem;
+    box-shadow: 0 0 15px rgba(106, 0, 244, 0.5);
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+  }
+
+  .member-name {
+    font-weight: 500;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+    color: white;
+  }
+
+  .card-footer {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .btn {
+    padding: 0.75rem 1.75rem;
+    border-radius: 50px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    letter-spacing: 0.5px;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .btn-outline-secondary {
+    border: 2px solid var(--cosmic-blue);
+    color: var(--cosmic-blue);
+    background: transparent;
+  }
+
+  .btn-outline-secondary:hover {
+    background: var(--cosmic-blue);
+    color: black;
+    box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+    transform: translateY(-2px);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, var(--cosmic-blue), var(--cosmic-pink));
+    color: black;
+    border: none;
+    box-shadow: 0 0 15px rgba(0, 247, 255, 0.5);
+    font-weight: 700;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 247, 255, 0.8);
+  }
+
+  .reorder-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .reorder-actions button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cosmic-blue);
+    border: 1px solid rgba(0, 247, 255, 0.3);
+  }
+
+  .reorder-actions button:hover {
+    transform: scale(1.1);
+    background: var(--cosmic-blue);
+    color: black;
+    box-shadow: 0 0 15px rgba(0, 247, 255, 0.5);
+  }
+
+  /* Floating particles */
+  .particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .reorder-card {
+      margin: 1rem;
+    }
+
+    .card-header h2 {
+      font-size: 1.5rem;
+    }
+
+    .card-header::after {
+      display: none;
+    }
+
+    #sortableList li {
+      padding: 1rem;
+    }
+  }
+
+  /* Drag hint animation */
+  .drag-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--cosmic-blue);
+    font-size: 1.2rem;
+    text-align: center;
+    width: 100%;
+    pointer-events: none;
+    opacity: 0;
+    animation: fadeInOut 4s infinite;
+    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+  }
+
+  @keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.8; }
+  }
+</style>
+
+<div class="reorder-page">
+  <!-- Cosmic Background Elements -->
+  <div class="cosmic-bg">
+    <div class="stars"></div>
+    <div class="cosmic-glow"></div>
+    <canvas id="particles" class="particles"></canvas>
+  </div>
+
+  <form id="reorderForm" method="POST" action="{% url 'reorder_members' %}" class="reorder-card">
+    {% csrf_token %}
+    <div class="card-header">
+      <i class="bi bi-shuffle" style="font-size: 1.8rem; color: var(--cosmic-pink);"></i>
+      <h2>TEAM FORMATION CONTROL</h2>
+    </div>
+
+    <ul id="sortableList" class="list-unstyled">
+      <div class="drag-hint">
+        <i class="bi bi-arrow-up-down" style="font-size: 2rem;"></i><br>
+        DRAG TO REORDER PLAYERS
+      </div>
+      {% for member in members %}
+        <li data-id="{{ member.id }}">
+          <div class="member-info">
+            <i class="bi bi-grip-vertical handle"></i>
+            <span class="position-badge">{{ member.position|add:1 }}</span>
+            <span class="member-name">{{ member.name }}</span>
+          </div>
+          <div class="reorder-actions">
+            <button type="button" class="btn-move-up" title="Move Up">
+              <i class="bi bi-arrow-up"></i>
+            </button>
+            <button type="button" class="btn-move-down" title="Move Down">
+              <i class="bi bi-arrow-down"></i>
+            </button>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+    <input type="hidden" name="order_data" id="orderDataInput">
+
+    <div class="card-footer">
+      <a href="#" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> BACK
+      </a>
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-lg"></i> CONFIRM ORDER
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Sortable.js (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<!-- Confetti.js (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Initialize sortable list
+    const sortableList = document.getElementById('sortableList');
+    const sortable = new Sortable(sortableList, {
+      animation: 250,
+      handle: '.handle',
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      onStart: function() {
+        document.querySelector('.drag-hint').style.opacity = '0';
+      },
+      onEnd: function() {
+        updatePositionBadges();
+      }
+    });
+
+    // Update position badges after reordering
+    function updatePositionBadges() {
+      const items = sortableList.querySelectorAll('li');
+      items.forEach((item, index) => {
+        const badge = item.querySelector('.position-badge');
+        if (badge) {
+          badge.textContent = index + 1;
+          // Add animation effect
+          badge.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            badge.style.transform = 'scale(1)';
+          }, 300);
+        }
+      });
+    }
+
+    // Form submission handler
+    const reorderForm = document.getElementById('reorderForm');
+    reorderForm.addEventListener('submit', function(e) {
+      const order = [];
+      document.querySelectorAll('#sortableList li').forEach(li => {
+        order.push(li.getAttribute('data-id'));
+      });
+      document.getElementById('orderDataInput').value = JSON.stringify(order);
+
+      // Celebrate with confetti
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#00f7ff', '#ff00f7', '#9d00ff']
+      });
+    });
+
+    // Move up/down buttons functionality
+    function moveItem(element, direction) {
+      const current = element.closest('li');
+      if (!current) return;
+
+      const sibling = (direction === 'up') ? current.previousElementSibling : current.nextElementSibling;
+      if (sibling && sibling.tagName === 'LI') {
+        if (direction === 'up') {
+          current.parentNode.insertBefore(current, sibling);
+        } else {
+          current.parentNode.insertBefore(sibling, current);
+        }
+        updatePositionBadges();
+
+        // Add visual feedback
+        current.style.transform = 'scale(1.05)';
+        current.style.boxShadow = '0 0 20px rgba(0, 247, 255, 0.5)';
+        setTimeout(() => {
+          current.style.transform = '';
+          current.style.boxShadow = '';
+        }, 300);
+      }
+    }
+
+    document.querySelectorAll('.btn-move-up').forEach(btn => {
+      btn.addEventListener('click', () => moveItem(btn, 'up'));
+    });
+
+    document.querySelectorAll('.btn-move-down').forEach(btn => {
+      btn.addEventListener('click', () => moveItem(btn, 'down'));
+    });
+
+    // Particle effect for background
+    const canvas = document.getElementById('particles');
+    if (canvas) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const ctx = canvas.getContext('2d');
+      const particles = [];
+      const colors = ['#00f7ff', '#ff00f7', '#9d00ff', '#ffffff'];
+
+      // Create particles
+      for (let i = 0; i < 150; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 4 + 1,
+          speedX: Math.random() * 2 - 1,
+          speedY: Math.random() * 2 - 1,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+
+      // Animation loop
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+
+          // Create glow effect
+          const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+          gradient.addColorStop(0, p.color);
+          gradient.addColorStop(1, 'transparent');
+
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Draw core particle
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Movement
+          p.x += p.speedX;
+          p.y += p.speedY;
+
+          // Bounce off edges
+          if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      window.addEventListener('resize', function() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+    }
+
+    // Hide drag hint after first interaction
+    let firstInteraction = false;
+    const dragHint = document.querySelector('.drag-hint');
+
+    document.addEventListener('mousedown', function() {
+      if (!firstInteraction) {
+        firstInteraction = true;
+        dragHint.style.animation = 'fadeOut 1s forwards';
+        setTimeout(() => dragHint.style.display = 'none', 1000);
+      }
+    });
+  });
+</script>
+{% endblock %}

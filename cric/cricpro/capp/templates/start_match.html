@@ -1,0 +1,500 @@
+{% extends "base1.html" %}
+{% block title %}Start a New Match{% endblock %}
+{% block content %}
+
+<style>
+  :root {
+    --cosmic-purple: #6a00f4;
+    --cosmic-blue: #00f7ff;
+    --cosmic-pink: #ff00f7;
+    --dark-space: #0a0e17;
+    --neon-text: #fff;
+  }
+
+  body {
+    background: radial-gradient(ellipse at bottom, var(--dark-space) 0%, #000000 100%);
+    font-family: 'Orbitron', 'Segoe UI', sans-serif;
+    color: var(--neon-text);
+  }
+
+  /* Cosmic Background Elements */
+  .cosmic-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+
+  .stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('https://assets.codepen.io/13471/stars.png') repeat;
+    animation: stars 120s linear infinite;
+  }
+
+  @keyframes stars {
+    0% { background-position: 0 0; }
+    100% { background-position: -1000px 1000px; }
+  }
+
+  .cosmic-glow {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background:
+      radial-gradient(circle at 30% 30%, var(--cosmic-purple), transparent 50%),
+      radial-gradient(circle at 70% 70%, var(--cosmic-blue), transparent 50%),
+      radial-gradient(circle at 50% 20%, var(--cosmic-pink), transparent 50%);
+    opacity: 0.15;
+    animation: cosmic-move 60s infinite alternate;
+  }
+
+  @keyframes cosmic-move {
+    0% { transform: translate(-25%, -25%); }
+    100% { transform: translate(-75%, -75%); }
+  }
+
+  /* Cards */
+  .card {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(0, 247, 255, 0.2);
+    box-shadow:
+      0 0 15px rgba(0, 247, 255, 0.1),
+      0 0 30px rgba(157, 0, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow:
+      0 0 25px rgba(0, 247, 255, 0.3),
+      0 0 40px rgba(157, 0, 255, 0.2);
+  }
+
+  .card-header {
+    background: linear-gradient(135deg, var(--cosmic-purple), var(--cosmic-blue));
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* List Items */
+  .list-group-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.3s ease;
+  }
+
+  .list-group-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+  }
+
+  /* Buttons */
+  .btn {
+    transition: all 0.3s ease;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-outline-secondary {
+    border-color: var(--cosmic-blue);
+    color: var(--cosmic-blue);
+  }
+
+  /* Navigation Buttons */
+.btn-navigation {
+    min-width: 200px;
+    transition: all 0.3s ease;
+    border-width: 2px;
+    font-weight: 500;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+    color: white;
+    border-color: transparent;
+}
+
+.btn-outline-warning:hover {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: white;
+    border-color: transparent;
+}
+
+.match-completed-popup {
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: white;
+}
+
+.swal2-title, .swal2-content {
+    color: inherit !important;
+}
+
+  .btn-outline-secondary:hover {
+    background: var(--cosmic-blue);
+    color: black;
+    box-shadow: 0 0 15px rgba(0, 247, 255, 0.5);
+  }
+
+  .btn-outline-danger {
+    border-color: var(--cosmic-pink);
+    color: var(--cosmic-pink);
+  }
+
+  .btn-outline-danger:hover {
+    background: var(--cosmic-pink);
+    color: black;
+    box-shadow: 0 0 15px rgba(255, 0, 247, 0.5);
+  }
+
+  .btn-outline-primary {
+    border-color: var(--cosmic-blue);
+    color: var(--cosmic-blue);
+  }
+
+  .btn-outline-primary:hover {
+    background: var(--cosmic-blue);
+    color: black;
+  }
+
+  .btn-outline-warning {
+    border-color: #ffc107;
+    color: #ffc107;
+  }
+
+  .btn-outline-warning:hover {
+    background: #ffc107;
+    color: black;
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, var(--cosmic-blue), var(--cosmic-pink));
+    border: none;
+    color: black;
+    font-weight: 700;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+  }
+
+  /* Form Elements */
+  .form-select, .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  .form-select:focus, .form-control:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--cosmic-blue);
+    box-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+    color: blue
+  }
+
+  /* Headings */
+  h2, h4 {
+    background: linear-gradient(90deg, var(--cosmic-blue), var(--cosmic-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  }
+
+  /* Floating particles */
+  .particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+</style>
+
+<div class="cosmic-bg">
+  <div class="stars"></div>
+  <div class="cosmic-glow"></div>
+  <canvas id="particles" class="particles"></canvas>
+</div>
+
+
+
+
+<div class="container mt-5">
+  <h2 class="mb-4">🏏 LAUNCH NEW MATCH</h2>
+
+  <form method="POST" class="card shadow p-4">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="team1" class="form-label fw-bold">TEAM 1</label>
+      <select class="form-select" id="team1" name="team1" required>
+        <option value="">-- SELECT TEAM 1 --</option>
+        {% for team in teams %}
+          <option value="{{ team.id }}">{{ team.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="team2" class="form-label fw-bold">TEAM 2</label>
+      <select class="form-select" id="team2" name="team2" required>
+        <option value="">-- SELECT TEAM 2 --</option>
+        {% for team in teams %}
+          <option value="{{ team.id }}">{{ team.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+
+
+    <div class="mb-3">
+      <label for="total_overs" class="form-label fw-bold">TOTAL OVERS</label>
+      <input type="number" class="form-control" id="total_overs" name="total_overs" min="1" required>
+    </div>
+
+
+<!-- Single Batting Mode Toggle -->
+<div class="mb-3">
+  <div class="form-check form-switch d-flex align-items-center">
+    <input class="form-check-input" type="checkbox" id="single_batting"
+           name="single_batting" {% if match.single_batting %}checked{% endif %}>
+    <label class="form-check-label fw-bold ms-2" for="single_batting" style="cursor: pointer;">
+      <span id="battingModeText">
+        {% if match.single_batting %}Single Batting Mode{% else %}Standard Mode{% endif %}
+      </span>
+    </label>
+  </div>
+  <small class="text-muted" id="battingModeHelp">
+    {% if match.single_batting %}
+      Innings ends only when no batters remain
+    {% else %}
+      Standard rules: Innings closes when fewer than 2 batters remain
+    {% endif %}
+  </small>
+</div>
+
+    <button type="submit" class="btn btn-success py-2">
+      🚀 LAUNCH MATCH
+    </button>
+  </form>
+</div>
+
+<!-- Match History -->
+<div class="container mt-5 mb-5">
+  <h4 class="mb-4">📜 MATCH ARCHIVES</h4>
+
+  {% if matches %}
+    <ul class="list-group">
+      {% for match in matches %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>
+            <a href="{% url 'record_ball' match.id %}" class="text-decoration-none fw-bold">
+              🏏 {{ match.team1.name }} vs {{ match.team2.name }}
+            </a>
+            <small class="text-muted ms-2">({{ match.created_at|date:"M d, Y H:i" }})</small>
+          </span>
+          <div>
+            <a href="{% url 'scorecard' match.id %}" class="btn btn-outline-primary btn-sm me-2">📊 STATS</a>
+            <a href="{% url 'leaderboard' match.id %}" class="btn btn-outline-warning btn-sm me-2">🏆 LEADERBOARD</a>
+            <form action="{% url 'delete_member' match.id %}?type=match" method="post" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm">🗑️ DELETE</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="alert alert-dark mt-3">
+      No matches recorded yet. Launch your first match above! ⚡
+    </div>
+  {% endif %}
+</div>
+<div class="container mt-5">
+  <div class="card shadow-sm mb-5">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <span>🧑‍🤝‍🧑 TEAM ARSENAL</span>
+      <button id="delete-selected" class="btn btn-sm btn-danger d-none" form="teams-form">
+        🗑️ DELETE SELECTED
+      </button>
+    </div>
+    <form id="teams-form" method="post" action="{% url 'delete_multiple_teams' %}">
+      {% csrf_token %}
+      <ul class="list-group list-group-flush">
+        {% for team in teams %}
+          <li class="list-group-item d-flex justify-content-between align-items-center
+                    {% cycle 'list-group-item-light' 'list-group-item-secondary' %}">
+            <div class="form-check d-flex align-items-center">
+              <input class="form-check-input team-checkbox me-3" type="checkbox"
+                     name="team_ids" value="{{ team.id }}" id="team-{{ team.id }}">
+              <label class="form-check-label" for="team-{{ team.id }}">
+                <a href="{% url 'team_detail' team.id %}" class="fw-bold text-decoration-none">
+                  {{ team.name }}
+                </a>
+                <small class="text-muted ms-2">({{ team.created_at|date:"Y-m-d H:i" }})</small>
+              </label>
+            </div>
+            <div>
+              <a href="{% url 'edit_team' team.id %}" class="btn btn-sm btn-outline-warning me-2">
+                ✏️ EDIT
+              </a>
+              <button type="button" class="btn btn-sm btn-outline-danger delete-single"
+                      data-team-id="{{ team.id }}">
+                🗑️ DELETE
+              </button>
+            </div>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">No teams created yet.</li>
+        {% endfor %}
+      </ul>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Checkbox functionality
+  const checkboxes = document.querySelectorAll('.team-checkbox');
+  const deleteSelectedBtn = document.getElementById('delete-selected');
+
+  function toggleDeleteButton() {
+    const checkedBoxes = document.querySelectorAll('.team-checkbox:checked');
+    deleteSelectedBtn.classList.toggle('d-none', checkedBoxes.length === 0);
+  }
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', toggleDeleteButton);
+  });
+
+  // Single delete button
+  document.querySelectorAll('.delete-single').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const teamId = this.getAttribute('data-team-id');
+      if (confirm('Are you sure you want to delete this team?')) {
+        // Create a temporary form for single deletion
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = "{% url 'delete_team' 0 %}".replace('0', teamId);
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
+
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
+});
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Particle effect for background
+    const canvas = document.getElementById('particles');
+    if (canvas) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const ctx = canvas.getContext('2d');
+      const particles = [];
+      const colors = ['#00f7ff', '#ff00f7', '#9d00ff', '#ffffff'];
+
+      // Create particles
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 3 + 1,
+          speedX: Math.random() * 1 - 0.5,
+          speedY: Math.random() * 1 - 0.5,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+
+      // Animation loop
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+
+          p.x += p.speedX;
+          p.y += p.speedY;
+
+          if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      window.addEventListener('resize', function() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+    }
+
+    // Add confirmation for delete actions
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('form[action*="delete_team"]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      const btn = this.querySelector('button[type="submit"]');
+      if (btn.disabled) {
+        e.preventDefault();
+        return;
+      }
+      btn.disabled = true;
+
+      // Optional: Add visual feedback
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+    });
+  });
+});
+</script>
+<!-- Add this JavaScript for immediate feedback -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const toggle = document.getElementById('single_batting');
+  const modeText = document.getElementById('battingModeText');
+  const helpText = document.getElementById('battingModeHelp');
+
+  function updateDisplay() {
+    if (toggle.checked) {
+      modeText.textContent = 'Single Batting Mode';
+      helpText.textContent = 'Innings ends only when no batters remain';
+    } else {
+      modeText.textContent = 'Standard Mode';
+      helpText.textContent = 'Standard rules: Innings closes when fewer than 2 batters remain';
+    }
+  }
+
+  // Initialize display
+  updateDisplay();
+
+  // Update on change
+  toggle.addEventListener('change', updateDisplay);
+});
+</script>
+{% endblock %}

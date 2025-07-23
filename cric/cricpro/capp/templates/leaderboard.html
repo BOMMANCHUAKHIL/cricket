@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .leader-card {
+    background: linear-gradient(to right, #e0f7fa, #ffffff);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+  }
+  .leader-card:hover {
+    transform: scale(1.02);
+  }
+  .leaderboard-heading {
+    font-size: 2rem;
+    font-weight: bold;
+    background: linear-gradient(to right, #00c6ff, #0072ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .highlight-box {
+    background-color: #f1f8e9;
+    padding: 15px;
+    border-left: 6px solid #28a745;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  .batter-icon {
+    color: #007bff;
+  }
+  .bowler-icon {
+    color: #dc3545;
+  }
+  .best-highlight {
+    background-color: #fff3cd !important;
+    border-left: 4px solid #ffc107;
+  }
+</style>
+
+<div class="container my-5">
+  <h2 class="text-center leaderboard-heading mb-5">
+    🏆 Leaderboard: {{ match.team1.name }} vs {{ match.team2.name }}
+  </h2>
+
+  <!-- Highlights -->
+  <div class="highlight-box">
+    <h5 class="mb-2 text-success">🥇 Best Batter:</h5>
+    {% if best_batter.0 %}
+      <strong>{{ best_batter.0 }}</strong> with <strong>{{ best_batter.1 }}</strong> runs
+    {% else %}
+      No batting data available.
+    {% endif %}
+  </div>
+
+  <div class="highlight-box">
+    <h5 class="mb-2 text-danger">🎯 Best Bowler:</h5>
+    {% if best_bowler.0 %}
+      <strong>{{ best_bowler.0 }}</strong> –
+      {{ best_bowler.1.wickets }} wicket(s),
+      {{ best_bowler.1.runs }} runs,
+      {{ best_bowler.1.balls }} balls
+    {% else %}
+      No bowling data available.
+    {% endif %}
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="row g-4">
+    <!-- Batters -->
+    <div class="col-md-6">
+      <div class="leader-card">
+        <h4 class="text-primary mb-3">
+          <i class="bi bi-person-fill batter-icon"></i> Top Batters
+        </h4>
+        <ul class="list-group list-group-flush">
+          {% for batter, score in sorted_batters %}
+            <li class="list-group-item d-flex justify-content-between align-items-center {% if batter == best_batter.0 %}best-highlight{% endif %}">
+              <strong>{{ batter }}</strong>
+              <span class="badge bg-primary rounded-pill">{{ score }} runs</span>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">No batting data yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bowlers -->
+    <div class="col-md-6">
+      <div class="leader-card">
+        <h4 class="text-danger mb-3">
+          <i class="bi bi-target bowler-icon"></i> Top Bowlers
+        </h4>
+        <ul class="list-group list-group-flush">
+          {% for bowler, stats in bowler_stats.items %}
+            <li class="list-group-item d-flex justify-content-between align-items-center {% if bowler == best_bowler.0 %}best-highlight{% endif %}">
+              <strong>{{ bowler }}</strong>
+              <span class="text-muted small">
+                runs: {{ stats.runs }},
+                wickets: {{ stats.wickets }},
+                balls: {{ stats.balls }}
+              </span>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">No bowling data yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

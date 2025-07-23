@@ -1,0 +1,719 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Generated Teams</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --neon-blue: #00f7ff;
+      --neon-pink: #ff00f7;
+      --neon-purple: #9d00ff;
+      --dark-space: #0a0e17;
+      --gold: #FFD700;
+      --silver: #C0C0C0;
+    }
+
+    body {
+      background: radial-gradient(ellipse at bottom, var(--dark-space) 0%, #000000 100%);
+      font-family: 'Roboto', sans-serif;
+      color: #f0f0f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://assets.codepen.io/13471/stars.png') repeat;
+      z-index: -1;
+      animation: stars 120s linear infinite;
+    }
+
+    @keyframes stars {
+      0% { background-position: 0 0; }
+      100% { background-position: -1000px 1000px; }
+    }
+
+    .container {
+      max-width: 1200px;
+      padding-top: 3rem;
+      padding-bottom: 5rem;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.5rem;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 15px rgba(0, 247, 255, 0.5);
+      position: relative;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      letter-spacing: 2px;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+      border-radius: 3px;
+      box-shadow: 0 0 15px var(--neon-blue), 0 0 25px var(--neon-pink);
+    }
+
+    .lead {
+      font-size: 1.25rem;
+      opacity: 0.9;
+      margin-bottom: 3rem;
+    }
+
+    /* Team Cards */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2.5rem;
+      margin: 4rem 0;
+    }
+
+    .team-card {
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(0, 247, 255, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 247, 255, 0.15);
+      backdrop-filter: blur(15px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .team-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 247, 255, 0.15) 0%, transparent 70%);
+      transform: rotate(30deg);
+      z-index: -1;
+      transition: all 0.6s ease;
+      opacity: 0;
+    }
+
+    .team-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 15px 40px rgba(0, 247, 255, 0.3);
+    }
+
+    .team-card:hover::before {
+      opacity: 1;
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      0% { transform: rotate(30deg) translate(-10%, -10%); }
+      50% { transform: rotate(30deg) translate(10%, 10%); }
+      100% { transform: rotate(30deg) translate(-10%, -10%); }
+    }
+
+    /* Team Header */
+    .team-header {
+      background: linear-gradient(135deg, rgba(0, 247, 255, 0.25), rgba(157, 0, 255, 0.25));
+      color: white;
+      padding: 1.75rem;
+      position: relative;
+      border-bottom: 1px solid rgba(0, 247, 255, 0.4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .team-header h3 {
+      font-family: 'Orbitron', sans-serif;
+      margin: 0;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+    }
+
+    .team-header h3::before {
+      content: '⚔️';
+      margin-right: 12px;
+      filter: drop-shadow(0 0 8px var(--neon-blue));
+    }
+
+    /* Team Body */
+    .team-body {
+      padding: 2rem;
+    }
+
+    .team-meta {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .team-meta i {
+      color: var(--neon-blue);
+    }
+
+    /* Member List */
+    .member-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .member-item {
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .member-item:last-child {
+      border-bottom: none;
+    }
+
+    .member-item:hover {
+      background: rgba(0, 247, 255, 0.08);
+      transform: translateX(8px);
+    }
+
+    .member-item.captain-item {
+      background: rgba(255, 215, 0, 0.08);
+      border-left: 4px solid var(--gold);
+      padding-left: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .member-item.captain-item:hover {
+      background: rgba(255, 215, 0, 0.15);
+    }
+
+    .member-name {
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .member-position {
+      margin-left: auto;
+      background: rgba(0, 247, 255, 0.25);
+      padding: 0.3rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.85rem;
+      font-weight: bold;
+      min-width: 50px;
+      text-align: center;
+    }
+
+    .captain-item .member-position {
+      background: rgba(255, 215, 0, 0.3);
+      color: var(--gold);
+    }
+
+    .fa-crown {
+      color: var(--gold);
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+    }
+
+    /* Buttons */
+    .btn-edit {
+      background: rgba(255, 193, 7, 0.2);
+      color: var(--gold);
+      border: 1px solid rgba(255, 193, 7, 0.5);
+      border-radius: 0.75rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 0 15px rgba(255, 193, 7, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-edit:hover {
+      background: var(--gold);
+      color: #000;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 0 25px rgba(255, 193, 7, 0.4);
+    }
+
+    /* No Teams State */
+    .no-teams {
+      background: rgba(255, 0, 247, 0.15);
+      border: 2px dashed var(--neon-pink);
+      padding: 3rem;
+      text-align: center;
+      border-radius: 1.5rem;
+      margin: 4rem 0;
+      backdrop-filter: blur(5px);
+    }
+
+    .no-teams h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--neon-pink);
+      margin-bottom: 1.5rem;
+    }
+
+    .no-teams a {
+      color: var(--neon-blue);
+      text-decoration: none;
+      font-weight: bold;
+      border-bottom: 2px solid var(--neon-blue);
+      transition: all 0.3s ease;
+      padding-bottom: 2px;
+      display: inline-block;
+      margin-top: 1.5rem;
+    }
+
+    .no-teams a:hover {
+      color: white;
+      border-bottom-color: white;
+      text-shadow: 0 0 8px var(--neon-blue);
+    }
+
+    /* Available Members Section */
+    .available-members-section {
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      margin-top: 4rem;
+      border: 1px solid rgba(0, 247, 255, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 247, 255, 0.15);
+    }
+
+    .available-members-section h3 {
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--neon-blue);
+      text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+    }
+
+    .available-members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .available-member-card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid var(--neon-purple);
+      transition: all 0.3s ease;
+    }
+
+    .available-member-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 247, 255, 0.3);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .member-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .member-name {
+      font-weight: 600;
+      color: var(--neon-blue);
+    }
+
+    .member-position {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .team-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-team-action {
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-team-1 {
+      background: rgba(0, 247, 255, 0.25);
+      color: var(--neon-blue);
+    }
+
+    .btn-team-1:hover {
+      background: var(--neon-blue);
+      color: black;
+      transform: translateY(-2px);
+    }
+
+    .btn-team-2 {
+      background: rgba(255, 0, 247, 0.25);
+      color: var(--neon-pink);
+    }
+
+    .btn-team-2:hover {
+      background: var(--neon-pink);
+      color: black;
+      transform: translateY(-2px);
+    }
+
+    /* Animations */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+      100% { transform: translateY(0px); }
+    }
+
+    .team-card:nth-child(odd) {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .team-card:nth-child(even) {
+      animation: float 6s ease-in-out infinite 1s;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.75rem;
+      }
+
+      .team-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .available-member-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.25rem;
+      }
+
+      /* Add this to your existing CSS */
+.btn-outline-success {
+  color: #00ff88;
+  border-color: #00ff88;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-success:hover {
+  background: #00ff88;
+  color: #000;
+  transform: translateY(-3px);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+}
+
+/* Animation for the download button */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+#download-teams-btn:hover {
+  animation: pulse 1.5s infinite;
+}
+
+      .team-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .btn-team-action {
+        width: 48%;
+        justify-content: center;
+      }
+
+    }
+  </style>
+</head>
+<body>
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="animate__animated animate__fadeInDown">TEAM FORMATION</h1>
+    <p class="lead text-white animate__animated animate__fadeIn animate__delay-1s">Strategically assembled squads ready for battle</p>
+  </div>
+
+  {% if teams %}
+  <div class="team-grid">
+    {% for team in teams %}
+    <div class="team-card animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|divisibleby:2|yesno:'0s,0.2s' }};">
+      <div class="team-header">
+        <h3>{{ team.name|upper }}</h3>
+        {% if user.is_authenticated %}
+        <a href="{% url 'edit_team' team.id %}" class="btn btn-edit">
+          <i class="fas fa-edit"></i> EDIT
+        </a>
+        {% endif %}
+      </div>
+      <div class="team-body">
+        <div class="team-meta">
+          <i class="far fa-clock"></i>
+          <span>Created: {{ team.created_at|date:"M d, Y H:i" }}</span>
+        </div>
+
+        <h4 class="mt-4 mb-3"><i class="fas fa-users"></i> SQUAD ({{ team.members.count }})</h4>
+        <ul class="member-list">
+          <!-- Show captain(s) first -->
+          {% for member in team.members.all %}
+            {% if member.is_captain %}
+            <li class="member-item captain-item">
+              <span class="member-name">
+                <i class="fas fa-crown"></i>
+                {{ member.name }}
+              </span>
+              <span class="member-position">#{{ member.position }}</span>
+            </li>
+            {% endif %}
+          {% endfor %}
+
+          <!-- Then show regular members -->
+          {% for member in team.members.all %}
+            {% if not member.is_captain %}
+            <li class="member-item">
+              <span class="member-name">{{ member.name }}</span>
+              <span class="member-position">#{{ member.position }}</span>
+            </li>
+            {% endif %}
+          {% empty %}
+            <li class="member-item text-muted">No recruits in this squad</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="no-teams animate__animated animate__pulse">
+    <h3><i class="fas fa-exclamation-triangle"></i> NO TEAMS DEPLOYED</h3>
+    {% if user.is_authenticated %}
+    <p class="mt-3">Your barracks are empty. Ready to assemble your dream team?</p>
+    <a href="{% url 'generate_teams' %}" class="btn btn-outline-primary mt-3">
+      <i class="fas fa-plus"></i> GENERATE TEAMS
+    </a>
+    {% else %}
+    <p class="mt-3">Login to create and manage teams</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if user.is_authenticated and available_members and teams|length >= 2 %}
+  <div class="available-members-section mt-5 animate__animated animate__fadeIn">
+      <h3 class="text-center mb-4">
+          <i class="fas fa-user-plus"></i> AVAILABLE RECRUITS ({{ available_members.count }})
+      </h3>
+
+      <div class="available-members-grid">
+          {% for member in available_members %}
+          <div class="available-member-card">
+              <div class="member-info">
+                  <span class="member-name">{{ member.name }}</span>
+                  <span class="member-position">#{{ member.position }}</span>
+              </div>
+
+              <div class="team-actions">
+                  <form method="post" action="{% url 'add_member_to_team' %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="member_id" value="{{ member.id }}">
+                      <input type="hidden" name="team_id" value="{{ teams.0.id }}">
+                      <button type="submit" class="btn-team-action btn-team-1">
+                          <i class="fas fa-user-plus"></i> {{ teams.0.name|truncatechars:12 }}
+                      </button>
+                  </form>
+
+                  <form method="post" action="{% url 'add_member_to_team' %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="member_id" value="{{ member.id }}">
+                      <input type="hidden" name="team_id" value="{{ teams.1.id }}">
+                      <button type="submit" class="btn-team-action btn-team-2">
+                          <i class="fas fa-user-plus"></i> {{ teams.1.name|truncatechars:12 }}
+                      </button>
+                  </form>
+              </div>
+          </div>
+          {% endfor %}
+      </div>
+  </div>
+  {% endif %}
+
+  {% if user.is_authenticated and teams %}
+  <div class="text-center mt-5">
+    <div class="total-members animate__animated animate__fadeIn">
+      <i class="fas fa-chess-queen"></i> TOTAL RECRUITS: {{ total_members }}
+    </div>
+    <div class="mt-4">
+      <a href="{% url 'generate_teams' %}" class="btn btn-outline-primary btn-lg">
+        <i class="fas fa-sync-alt"></i> GENERATE NEW TEAMS
+      </a>
+      <a href="{% url 'download_teams' %}" class="btn btn-outline-success btn-lg ms-3" id="download-teams-btn">
+      <i class="fas fa-file-csv"></i> EXPORT TO CSV
+    </a>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not user.is_authenticated %}
+  <div class="text-center mt-5">
+    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+      <i class="fas fa-sign-in-alt"></i> LOGIN TO MANAGE TEAMS
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Floating particles background effect -->
+<canvas id="particles" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Particle effect
+    const canvas = document.getElementById('particles');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#00f7ff', '#ff00f7', '#9d00ff', '#ffffff'];
+
+      for (let i = 0; i < 150; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 3 + 1,
+          speedX: Math.random() * 1 - 0.5,
+          speedY: Math.random() * 1 - 0.5,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+
+          p.x += p.speedX;
+          p.y += p.speedY;
+
+          if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      window.addEventListener('resize', function() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+    }
+
+    // Team card hover effects
+    const teamCards = document.querySelectorAll('.team-card');
+    teamCards.forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-12px) scale(1.03)';
+        this.style.boxShadow = '0 20px 40px rgba(0, 247, 255, 0.3)';
+      });
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = '';
+        this.style.boxShadow = '';
+      });
+    });
+
+    // Confirm member addition
+    const addMemberForms = document.querySelectorAll('form[action*="add_member_to_team"]');
+    addMemberForms.forEach(form => {
+      form.addEventListener('submit', function(e) {
+        const memberName = this.closest('.available-member-card').querySelector('.member-name').textContent;
+        const teamName = this.querySelector('button').textContent.trim();
+        if (!confirm(`Add ${memberName} to ${teamName}?`)) {
+          e.preventDefault();
+        }
+      });
+    });
+
+    // Add subtle animation to available member cards
+    const availableCards = document.querySelectorAll('.available-member-card');
+    availableCards.forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.05}s`;
+      card.classList.add('animate__animated', 'animate__fadeIn');
+    });
+  });
+</script>
+<script>
+// Add this to your existing JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+  // ... your existing code ...
+
+  // Download button confirmation
+  const downloadBtn = document.getElementById('download-teams-btn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', function(e) {
+      if (!confirm('Download teams data as CSV file?')) {
+        e.preventDefault();
+      }
+    });
+  }
+
+  // ... rest of your existing JavaScript ...
+});
+</script>
+
+</body>
+</html>
+{% endblock %}

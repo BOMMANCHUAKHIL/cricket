@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center text-success mb-4">🏆 Overall Leaderboard</h2>
+
+  <!-- 🥇 Best Batter -->
+  <div class="mb-3 p-3 border rounded bg-light">
+    <h5 class="text-success">🥇 Best Batter:</h5>
+    {% if best_batter.0 %}
+      <strong>{{ best_batter.0 }}</strong> with <strong>{{ best_batter.1 }}</strong> runs
+    {% else %}
+      No batting data available.
+    {% endif %}
+  </div>
+
+  <!-- 🎯 Best Bowler -->
+  <div class="mb-4 p-3 border rounded bg-light">
+    <h5 class="text-danger">🎯 Best Bowler:</h5>
+    {% if best_bowler.0 %}
+      <strong>{{ best_bowler.0 }}</strong> -
+      {{ best_bowler.1.wickets }} wicket(s),
+      {{ best_bowler.1.runs }} runs,
+      {{ best_bowler.1.balls }} balls,
+      economy: {{ best_bowler.1.economy }}
+    {% else %}
+      No bowling data available.
+    {% endif %}
+  </div>
+
+  <!-- 🏏 Top Batsmen -->
+  <div class="mb-4">
+    <h4 class="text-primary">🏏 Top Batsmen (Total Runs)</h4>
+    <table class="table table-bordered">
+      <thead><tr><th>#</th><th>Batsman</th><th>Runs</th></tr></thead>
+      <tbody>
+        {% for b in batsman_stats %}
+          <tr><td>{{ forloop.counter }}</td><td>{{ b.batsman }}</td><td>{{ b.total_runs }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 🎯 Top Bowlers -->
+  <div class="mb-4">
+    <h4 class="text-danger">🎯 Top Bowlers (Wickets)</h4>
+    <table class="table table-bordered">
+      <thead><tr><th>#</th><th>Bowler</th><th>Wickets</th></tr></thead>
+      <tbody>
+        {% for b in bowler_stats %}
+          <tr><td>{{ forloop.counter }}</td><td>{{ b.bowler }}</td><td>{{ b.total_wickets }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 📉 Best Economy Rates -->
+  <div class="mb-4">
+    <h4 class="text-info">📉 Best Economy Rates</h4>
+    <table class="table table-bordered">
+      <thead><tr><th>#</th><th>Bowler</th><th>Economy</th></tr></thead>
+      <tbody>
+        {% for b in economy_stats %}
+          <tr><td>{{ forloop.counter }}</td><td>{{ b.bowler }}</td><td>{{ b.economy }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 🧤 Most Catches -->
+  <div class="mb-4">
+    <h4 class="text-warning">🧤 Top Fielders (Catches)</h4>
+    <table class="table table-bordered">
+      <thead><tr><th>#</th><th>Fielder</th><th>Catches</th></tr></thead>
+      <tbody>
+        {% for f in fielder_stats %}
+          <tr><td>{{ forloop.counter }}</td><td>{{ f.fielder }}</td><td>{{ f.total_catches }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

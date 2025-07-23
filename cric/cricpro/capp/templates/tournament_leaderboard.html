@@ -1,0 +1,285 @@
+{% extends "base4.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}{{ tournament.name }} Leaderboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Cosmic Tournament Styles */
+  :root {
+    --cosmic-purple: #6a00f4;
+    --cosmic-blue: #00f7ff;
+    --cosmic-pink: #ff00f7;
+    --dark-space: #0a0e17;
+    --neon-text: #fff;
+  }
+
+  .leaderboard-section {
+    background: rgba(10, 14, 23, 0.8);
+    border: 1px solid var(--cosmic-blue);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
+    margin-bottom: 20px;
+    padding: 20px;
+  }
+
+  .leaderboard-header {
+    background: rgba(0, 247, 255, 0.1);
+    border-bottom: 1px solid var(--cosmic-blue);
+    color: var(--cosmic-pink);
+    padding: 10px 15px;
+    margin: -20px -20px 20px -20px;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .table-leaderboard {
+    background: rgba(10, 14, 23, 0.7);
+    color: white;
+    width: 100%;
+  }
+
+  .table-leaderboard th {
+    background: rgba(106, 0, 244, 0.3);
+    color: var(--cosmic-blue);
+    border-bottom: 1px solid var(--cosmic-blue);
+    padding: 12px 15px;
+  }
+
+  .table-leaderboard td {
+    border-bottom: 1px solid rgba(0, 247, 255, 0.1);
+    padding: 10px 15px;
+    vertical-align: middle;
+  }
+
+  .leaderboard-position {
+    font-weight: bold;
+    color: var(--cosmic-pink);
+    text-align: center;
+  }
+
+  .pos-1 { color: gold !important; }
+  .pos-2 { color: silver !important; }
+  .pos-3 { color: #cd7f32 !important; }
+
+  .player-card {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(0, 247, 255, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .player-card h5 {
+    color: var(--cosmic-blue);
+    border-bottom: 1px solid rgba(0, 247, 255, 0.3);
+    padding-bottom: 8px;
+  }
+
+  .stat-badge {
+    background: rgba(106, 0, 244, 0.3);
+    border: 1px solid var(--cosmic-blue);
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-right: 5px;
+    font-size: 0.85rem;
+  }
+
+  .stat-value {
+    font-weight: bold;
+    color: var(--cosmic-pink);
+  }
+
+    .leaderboard-container {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .section-header {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .player-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+    }
+    
+    .player-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .player-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+    
+    .stat-badge {
+        display: inline-block;
+        background: #e8f4fc;
+        color: #2980b9;
+        padding: 5px 10px;
+        border-radius: 20px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+    }
+    
+    .stat-value {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 30px;
+        color: #7f8c8d;
+    }
+    
+    @media (max-width: 768px) {
+        .player-card {
+            padding: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>{{ tournament.name }} Leaderboard</h1>
+  
+  <!-- Team Standings -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h2>Team Standings</h2>
+    </div>
+    <div class="card-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Team</th>
+            <th>P</th>
+            <th>W</th>
+            <th>L</th>
+            <th>D</th>
+            <th>Pts</th>
+            <th>NRR</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in leaderboard %}
+          <tr class="{% if forloop.counter <= 3 %}top-{{ forloop.counter }}{% endif %}">
+            <td>{{ forloop.counter }}</td>
+            <td>{{ entry.team.name }}</td>
+            <td>{{ entry.matches_played }}</td>
+            <td>{{ entry.matches_won }}</td>
+            <td>{{ entry.matches_lost }}</td>
+            <td>{{ entry.matches_drawn }}</td>
+            <td>{{ entry.points }}</td>
+            <td class="{% if entry.net_run_rate > 0 %}text-success{% elif entry.net_run_rate < 0 %}text-danger{% endif %}">
+              {{ entry.net_run_rate|floatformat:2 }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8">No team data available</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+
+<div class="container mt-4">
+    <div class="leaderboard-container">
+        <!-- Top Batsmen Section -->
+        <div class="mb-5">
+            <h2 class="section-header">Top Batsmen</h2>
+            {% if batsman_stats %}
+                <div class="row">
+                    {% for batsman in batsman_stats %}
+                    <div class="col-md-4 mb-3">
+                        <div class="player-card">
+                            <h4 class="player-name">{{ batsman.batsman }}</h4>
+                            <div>
+                                <span class="stat-badge">Runs <span class="stat-value">{{ batsman.total_runs }}</span></span>
+                                <span class="stat-badge">SR <span class="stat-value">{{ batsman.strike_rate }}</span></span>
+                                <span class="stat-badge">Balls <span class="stat-value">{{ batsman.balls_faced }}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-baseball-bat" style="font-size: 2rem;"></i>
+                    <p>No batting data available</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Top Bowlers Section -->
+<div class="mb-5">
+    <h2 class="section-header">Top Bowlers</h2>
+    {% if bowler_stats %}
+        <div class="row">
+            {% for bowler in bowler_stats %}
+            <div class="col-md-4 mb-3">
+                <div class="player-card">
+                    <h4 class="player-name">{{ bowler.bowler }}</h4>
+                    <div>
+                        <span class="stat-badge">Wkts <span class="stat-value">{{ bowler_data|get_item:bowler.bowler|get_item:'wickets' }}</span></span>
+                        <span class="stat-badge">Econ <span class="stat-value">{{ bowler_data|get_item:bowler.bowler|get_item:'economy' }}</span></span>
+                        <span class="stat-badge">Overs <span class="stat-value">{{ bowler_data|get_item:bowler.bowler|get_item:'overs_bowled' }}</span></span>
+                        <span class="stat-badge">Bowled <span class="stat-value">{{ bowler_data|get_item:bowler.bowler|get_item:'bowled' }}</span></span>
+                        <span class="stat-badge">Caught <span class="stat-value">{{ bowler_data|get_item:bowler.bowler|get_item:'caught' }}</span></span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-baseball-ball" style="font-size: 2rem;"></i>
+            <p>No bowling data available</p>
+        </div>
+    {% endif %}
+</div>
+
+        <!-- Top Fielders Section -->
+        <div class="mb-5">
+            <h2 class="section-header">Top Fielders</h2>
+            {% if fielder_stats %}
+                <div class="row">
+                    {% for fielder in fielder_stats %}
+                    <div class="col-md-4 mb-3">
+                        <div class="player-card">
+                            <h4 class="player-name">{{ fielder.fielder }}</h4>
+                            <div>
+                                <span class="stat-badge">Catches <span class="stat-value">{{ fielder.total_catches }}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-mitt" style="font-size: 2rem;"></i>
+                    <p>No fielding data available</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

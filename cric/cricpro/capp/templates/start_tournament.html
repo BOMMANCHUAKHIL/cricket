@@ -1,0 +1,322 @@
+{% extends "base4.html" %}
+{% load static %}
+
+{% block title %}Start a New Tournament{% endblock %}
+
+{% block extra_css %}
+<style>
+  .tournament-header {
+    color: var(--cosmic-blue);
+    text-align: center;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+  }
+
+  .tournament-card {
+    background: rgba(10, 14, 23, 0.9);
+    border: 2px solid var(--cosmic-blue);
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0, 247, 255, 0.3);
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .form-label {
+    color: var(--cosmic-pink);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+
+  .form-control {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--cosmic-blue);
+    color: white;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  .form-control:focus {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: var(--cosmic-pink);
+    box-shadow: 0 0 0 0.25rem rgba(255, 0, 247, 0.25);
+    color: green;
+  }
+
+  .team-selector {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 247, 255, 0.4);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .team-item {
+    padding: 1rem;
+    margin: 0.75rem 0;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+  }
+
+  .team-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(8px);
+    border-left: 4px solid var(--cosmic-purple);
+  }
+
+  .team-item label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    color: yellow;
+    font-weight: 500;
+  }
+
+  .team-checkbox {
+    margin-right: 1rem;
+    transform: scale(1.3);
+    accent-color: var(--cosmic-purple);
+  }
+
+  .team-count-badge {
+    background: var(--cosmic-purple);
+    color: white;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+
+  .btn-launch {
+    background: linear-gradient(135deg, var(--cosmic-purple), var(--cosmic-blue));
+    border: none;
+    color: white;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    margin-top: 1rem;
+    transition: all 0.3s;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn-launch:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0, 247, 255, 0.5);
+  }
+
+  .form-switch .form-check-input {
+    width: 3em;
+    height: 1.5em;
+    margin-right: 0.75rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--cosmic-blue);
+  }
+
+  .form-switch .form-check-input:checked {
+    background-color: var(--cosmic-purple);
+    border-color: var(--cosmic-purple);
+  }
+
+  .mode-description {
+    color: var(--cosmic-blue);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding-left: 3.5rem;
+  }
+
+  .archive-title {
+    color: var(--cosmic-blue);
+    text-align: center;
+    margin: 2rem 0 1.5rem;
+    text-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+  }
+
+  .no-tournaments {
+    background: rgba(10, 14, 23, 0.8);
+    border: 1px solid var(--cosmic-blue);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--cosmic-pink);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+      <h1 class="tournament-header">
+        <i class="bi bi-trophy-fill me-2"></i>CREATE NEW TOURNAMENT
+      </h1>
+
+      <div class="tournament-card">
+        <form method="POST">
+          {% csrf_token %}
+
+          <div class="mb-4">
+            <label for="name" class="form-label">TOURNAMENT NAME</label>
+            <input type="text" class="form-control" id="name" name="name" required placeholder="Enter tournament name">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">SELECT TEAMS</label>
+            <p class="text-muted">(Minimum 2 teams required)</p>
+            <div class="team-selector">
+              {% for team in teams %}
+                <div class="team-item">
+                  <label>
+                    <input type="checkbox" class="team-checkbox" name="teams" value="{{ team.id }}">
+                    {{ team.name }}
+                    <span class="team-count-badge">{{ team.members.count }}</span>
+                  </label>
+                </div>
+              {% empty %}
+                <div class="alert alert-dark">No teams available. Please create teams first.</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="total_overs" class="form-label">MATCH OVERS</label>
+            <input type="number" class="form-control" id="total_overs" name="total_overs" min="1" required value="4">
+          </div>
+
+          <div class="form-check form-switch mb-4 d-flex align-items-center">
+            <input class="form-check-input" type="checkbox" id="single_batting" name="single_batting" {% if single_batting %}checked{% endif %}>
+            <label class="form-check-label" for="single_batting">
+              <strong id="battingModeText">
+                {% if single_batting %}Single Batting Mode{% else %}Standard Mode{% endif %}
+              </strong>
+            </label>
+          </div>
+          <p class="mode-description" id="battingModeHelp">
+            {% if single_batting %}
+              Innings ends only when no batters remain
+            {% else %}
+              Standard rules: Innings closes when fewer than 2 batters remain
+            {% endif %}
+          </p>
+
+          <button type="submit" class="btn btn-launch">
+            <i class="bi bi-rocket-fill me-2"></i>LAUNCH TOURNAMENT
+          </button>
+        </form>
+      </div>
+
+      <h3 class="archive-title">
+        <i class="bi bi-archive me-2"></i>TOURNAMENT ARCHIVES
+      </h3>
+
+      {% if tournaments %}
+        <div class="list-group">
+          {% for tournament in tournaments %}
+            <div class="list-group-item mb-3" style="background: rgba(10, 14, 23, 0.8); border: 1px solid var(--cosmic-blue); border-radius: 8px;">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <a href="{% url 'tournament_detail' tournament.id %}" class="fw-bold d-block mb-1" style="color: var(--cosmic-blue);">
+                    <i class="bi bi-trophy me-2"></i>{{ tournament.name }}
+                  </a>
+                  <div class="text-muted small">
+                    {{ tournament.teams.count }} teams • {{ tournament.get_matches.count }} matches • Created: {{ tournament.created_at|date:"M d, Y H:i" }}
+                  </div>
+                </div>
+                <div class="d-flex">
+                  <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-sm me-2" style="background: var(--cosmic-blue); color: var(--dark-space);">
+                    <i class="bi bi-eye-fill"></i> View
+                  </a>
+                  <form action="{% url 'delete_tournament' tournament.id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm" style="background: var(--cosmic-pink); color: white;">
+                      <i class="bi bi-trash-fill"></i> Delete
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="no-tournaments">
+          <i class="bi bi-emoji-frown fs-4"></i>
+          <p class="mt-2 mb-0">No tournaments recorded yet. Launch your first tournament above!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        const checked = document.querySelectorAll('.team-checkbox:checked');
+        if (checked.length < 2) {
+          e.preventDefault();
+          alert('Please select at least 2 teams to create a tournament.');
+        }
+      });
+    }
+
+    // Batting mode toggle
+    const toggle = document.getElementById('single_batting');
+    const modeText = document.getElementById('battingModeText');
+    const helpText = document.getElementById('battingModeHelp');
+
+    function updateBattingMode() {
+      if (toggle.checked) {
+        modeText.textContent = 'Single Batting Mode';
+        helpText.textContent = 'Innings ends only when no batters remain';
+      } else {
+        modeText.textContent = 'Standard Mode';
+        helpText.textContent = 'Standard rules: Innings closes when fewer than 2 batters remain';
+      }
+    }
+
+    if (toggle && modeText && helpText) {
+      toggle.addEventListener('change', updateBattingMode);
+    }
+
+    // Team selection highlighting
+    const teamItems = document.querySelectorAll('.team-item');
+    teamItems.forEach(item => {
+      const checkbox = item.querySelector('.team-checkbox');
+      checkbox.addEventListener('change', function() {
+        if (this.checked) {
+          item.style.backgroundColor = 'rgba(106, 0, 244, 0.2)';
+          item.style.borderLeft = '4px solid var(--cosmic-purple)';
+        } else {
+          item.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+          item.style.borderLeft = '4px solid transparent';
+        }
+      });
+
+      // Initialize checked state
+      if (checkbox.checked) {
+        item.style.backgroundColor = 'rgba(106, 0, 244, 0.2)';
+        item.style.borderLeft = '4px solid var(--cosmic-purple)';
+      }
+    });
+  });
+</script>
+{% endblock %}

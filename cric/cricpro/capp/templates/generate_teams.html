@@ -1,0 +1,887 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="team-generator-container">
+  <!-- Animated Gradient Header -->
+  <header class="generator-header">
+    <div class="particles-container">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+    <div class="header-content">
+      <div class="animated-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+          <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+          <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
+          <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+        </svg>
+      </div>
+      <h1 class="gradient-text">Team Generator</h1>
+      <p class="subtitle">Create perfectly balanced teams with AI-powered fairness</p>
+    </div>
+  </header>
+
+  <!-- Main Form Container -->
+  <div class="form-glass-container">
+    <form method="post" class="team-generator-form" id="teamGeneratorForm">
+      {% csrf_token %}
+
+      <!-- Members Selection - Card Style -->
+      <div class="form-card active">
+        <div class="card-header">
+          <i class="bi bi-person-lines-fill"></i>
+          <h2>Select Team Members</h2>
+          <span class="badge bg-primary">{{ form.members.field.queryset.count }} available</span>
+        </div>
+        <div class="card-body">
+          {% if form.members.errors %}
+            <div class="alert alert-danger">
+              {{ form.members.errors }}
+            </div>
+          {% endif %}
+
+          <!-- Captain Selection Toggle -->
+          <div class="captain-toggle mb-3">
+            <button type="button" class="btn btn-sm btn-outline-primary" id="toggleCaptainsBtn">
+              <i class="bi bi-star-fill"></i> Show Captain Options
+            </button>
+          </div>
+
+          <div class="members-grid" id="membersGrid">
+            {% for member in form.members.field.queryset %}
+            <div class="member-checkbox-container">
+              <!-- Member Checkbox -->
+              <div class="member-checkbox">
+                <input type="checkbox" id="member_{{ member.id }}" name="members"
+                       value="{{ member.id }}" class="member-checkbox-input"
+                       {% if member.id in form.members.value %}checked{% endif %}>
+                <label for="member_{{ member.id }}">
+                  <div class="member-avatar">
+                    <i class="bi bi-person-circle"></i>
+                  </div>
+                  <span class="member-name">
+                    {{ member.name }}
+                    {% if member.is_captain %}
+                      <span class="badge bg-warning ms-2">Captain</span>
+                    {% endif %}
+                  </span>
+                </label>
+              </div>
+
+              <!-- Captain Toggle (hidden by default) -->
+              <div class="captain-toggle-option" style="display: none;">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox"
+                         id="captain_{{ member.id }}" name="captain_{{ member.id }}"
+                         {% if member.is_captain %}checked{% endif %}>
+                  <label class="form-check-label" for="captain_{{ member.id }}">Make Captain</label>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="select-actions">
+            <button type="button" class="btn-select-all" id="selectAllBtn">
+              <i class="bi bi-check2-all"></i> Select All
+            </button>
+            <button type="button" class="btn-clear-all" id="clearAllBtn">
+              <i class="bi bi-x-circle"></i> Clear All
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Team Configuration - Card Style -->
+      <div class="form-card">
+        <div class="card-header">
+          <i class="bi bi-sliders"></i>
+          <h2>Team Configuration</h2>
+        </div>
+        <div class="card-body">
+          <!-- Number of Teams -->
+          <div class="form-group">
+            <label for="{{ form.num_teams.id_for_label }}">
+              <i class="bi bi-grid-3x3-gap-fill"></i>
+              {{ form.num_teams.label }}
+            </label>
+            {% if form.num_teams.errors %}
+              <div class="alert alert-danger">
+                {{ form.num_teams.errors }}
+              </div>
+            {% endif %}
+            <div class="range-slider">
+              <input type="range" min="1" max="10" value="{{ form.num_teams.value|default:'2' }}"
+                     class="form-range" id="{{ form.num_teams.id_for_label }}"
+                     name="{{ form.num_teams.name }}">
+              <output class="bubble">{{ form.num_teams.value|default:'2' }}</output>
+            </div>
+          </div>
+
+          <!-- Shuffle Intensity -->
+          <div class="form-group">
+            <label for="{{ form.max_shuffle.id_for_label }}">
+              <i class="bi bi-shuffle"></i>
+              {{ form.max_shuffle.label }}
+              <span class="tooltip-icon" data-bs-toggle="tooltip"
+                    title="Lower values create more random teams, higher values keep similar members together">
+                <i class="bi bi-info-circle"></i>
+              </span>
+            </label>
+            <div class="intensity-control">
+              <div class="intensity-levels">
+                <span>Low</span>
+                <div class="intensity-bars">
+                  {% for i in "12345" %}
+                  <div class="intensity-bar {% if form.max_shuffle.value == forloop.counter %}active{% endif %}"
+                       data-value="{{ forloop.counter }}"></div>
+                  {% endfor %}
+                </div>
+                <span>High</span>
+              </div>
+              {{ form.max_shuffle }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <div class="form-actions">
+        <button type="submit" class="generate-btn" id="generateBtn">
+          <span class="btn-content">
+            <i class="bi bi-lightning-charge-fill"></i>
+            <span>Generate Teams</span>
+          </span>
+          <span class="btn-loader">
+            <div class="spinner"></div>
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Floating Decorative Elements -->
+  <div class="floating-elements">
+    <div class="floating-circle circle-1"></div>
+    <div class="floating-circle circle-2"></div>
+    <div class="floating-circle circle-3"></div>
+  </div>
+</div>
+
+<style>
+  /* All your existing CSS remains exactly the same */
+  :root {
+    --primary: #6c5ce7;
+    --secondary: #a29bfe;
+    --accent: #fd79a8;
+    --dark: #2d3436;
+    --light: #f5f6fa;
+    --success: #00b894;
+    --glass: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.2);
+  }
+
+  .team-generator-container {
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .generator-header {
+    position: relative;
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    color: white;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+    margin-bottom: -3rem;
+    z-index: 1;
+  }
+
+  .particles-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: float 15s infinite linear;
+  }
+
+  .particle:nth-child(1) {
+    width: 20px;
+    height: 20px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  .particle:nth-child(2) {
+    width: 30px;
+    height: 30px;
+    top: 60%;
+    left: 70%;
+    animation-delay: 2s;
+  }
+
+  .particle:nth-child(3) {
+    width: 15px;
+    height: 15px;
+    top: 80%;
+    left: 30%;
+    animation-delay: 4s;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-100vh) rotate(360deg); }
+  }
+
+  .animated-icon {
+    margin: 0 auto 1.5rem;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    backdrop-filter: blur(5px);
+    animation: pulse 2s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  .gradient-text {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to right, white, #f3ec78);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .form-glass-container {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    z-index: 2;
+  }
+
+  .form-card {
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .form-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  }
+
+  .card-header {
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .card-header i {
+    font-size: 1.5rem;
+  }
+
+  .card-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .card-header .badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.2);
+    font-weight: 500;
+  }
+
+  .card-body {
+    padding: 2rem;
+  }
+
+  .members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .member-checkbox {
+    position: relative;
+  }
+
+  .member-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .member-checkbox label {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--light);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .member-checkbox label:hover {
+    background: #e0e0e0;
+  }
+
+  .member-checkbox input[type="checkbox"]:checked + label {
+    background: var(--primary);
+    color: white;
+  }
+
+  .member-avatar {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .member-checkbox input[type="checkbox"]:checked + label .member-avatar {
+    color: white;
+  }
+
+  .member-name {
+    font-weight: 500;
+  }
+
+  .select-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .btn-select-all, .btn-clear-all {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-select-all:hover {
+    background: var(--success);
+    color: white;
+  }
+
+  .btn-clear-all:hover {
+    background: #ff7675;
+    color: white;
+  }
+
+  .form-group {
+    margin-bottom: 2rem;
+  }
+
+  .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--dark);
+  }
+
+  .form-group i {
+    font-size: 1.25rem;
+    color: var(--primary);
+  }
+
+  .range-slider {
+    position: relative;
+    padding-top: 1.5rem;
+  }
+
+  .form-range {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    background: var(--light);
+    border-radius: 10px;
+    outline: none;
+  }
+
+  .form-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 25px;
+    height: 25px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .form-range::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+  }
+
+  .bubble {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .intensity-control {
+    margin-top: 1rem;
+  }
+
+  .intensity-levels {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  .intensity-bars {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .intensity-bar {
+    height: 12px;
+    flex: 1;
+    background: var(--light);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .intensity-bar.active,
+  .intensity-bar:hover {
+    background: var(--accent);
+  }
+
+  .form-actions {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  .generate-btn {
+    background: var(--success);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 50px;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .generate-btn:hover {
+    background: #00a17d;
+    box-shadow: 0 8px 20px rgba(0, 184, 148, 0.3);
+  }
+
+  .btn-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-loader {
+    position: absolute;
+    right: 1rem;
+    display: none;
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 3px solid #fff;
+    border-top: 3px solid var(--dark);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .floating-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    animation: floaty 12s infinite ease-in-out alternate;
+  }
+
+  .circle-1 {
+    width: 120px;
+    height: 120px;
+    top: 20%;
+    left: 80%;
+    animation-delay: 0s;
+  }
+
+  .circle-2 {
+    width: 90px;
+    height: 90px;
+    top: 65%;
+    left: 10%;
+    animation-delay: 3s;
+  }
+
+  .circle-3 {
+    width: 70px;
+    height: 70px;
+    top: 35%;
+    left: 40%;
+    animation-delay: 5s;
+  }
+
+  @keyframes floaty {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      transform: translateY(-20px) scale(1.05);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .form-glass-container {
+      padding: 1rem;
+    }
+
+    .form-card .card-body {
+      padding: 1rem;
+    }
+
+    .generate-btn {
+      width: 100%;
+    }
+  }
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Get all necessary elements
+    const form = document.getElementById('teamGeneratorForm');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const memberCheckboxes = document.querySelectorAll('.member-checkbox-input');
+    const generateBtn = document.getElementById('generateBtn');
+    const membersGrid = document.getElementById('membersGrid');
+    const rangeInput = document.querySelector(".form-range");
+    const outputBubble = document.querySelector(".bubble");
+    const intensityBars = document.querySelectorAll(".intensity-bar");
+    const maxShuffleInput = document.querySelector("select[name='max_shuffle'], input[name='max_shuffle']");
+
+    // Load saved selections from localStorage
+    function loadSelectedMembers() {
+        const savedSelections = localStorage.getItem('teamGeneratorSelectedMembers');
+        if (savedSelections) {
+            const selectedIds = JSON.parse(savedSelections);
+            memberCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectedIds.includes(checkbox.value);
+            });
+        }
+    }
+
+    // Save selections to localStorage
+    function saveSelectedMembers() {
+        const selectedIds = Array.from(memberCheckboxes)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.value);
+        localStorage.setItem('teamGeneratorSelectedMembers', JSON.stringify(selectedIds));
+    }
+
+    // Select All functionality
+    function selectAllMembers() {
+        memberCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        saveSelectedMembers();
+    }
+
+    // Clear All functionality
+    function clearAllMembers() {
+        memberCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        saveSelectedMembers();
+    }
+
+    // Update range slider bubble
+    function updateRangeBubble() {
+        if (rangeInput && outputBubble) {
+            outputBubble.textContent = rangeInput.value;
+        }
+    }
+
+    // Handle intensity bar selection
+    function handleIntensityBarClick(bar) {
+        const value = bar.getAttribute("data-value");
+        if (maxShuffleInput) {
+            maxShuffleInput.value = value;
+            document.querySelectorAll(".intensity-bar").forEach(b => b.classList.remove("active"));
+            bar.classList.add("active");
+        }
+    }
+
+    // Form submission handler
+    function handleFormSubmit(e) {
+        // Check if at least one member is selected
+        const atLeastOneChecked = Array.from(memberCheckboxes).some(checkbox => checkbox.checked);
+        if (!atLeastOneChecked) {
+            e.preventDefault();
+            alert('Please select at least one member');
+            return;
+        }
+
+        // Show loading state
+        if (generateBtn) {
+            generateBtn.disabled = true;
+            generateBtn.querySelector(".btn-content").style.opacity = "0";
+            generateBtn.querySelector(".btn-loader").style.display = "block";
+        }
+    }
+
+    // Initialize intensity bars
+    function initIntensityBars() {
+        if (intensityBars.length && maxShuffleInput) {
+            intensityBars.forEach(bar => {
+                bar.addEventListener("click", () => handleIntensityBarClick(bar));
+            });
+
+            // Initialize active bar from input value
+            const currentVal = maxShuffleInput.value;
+            intensityBars.forEach(bar => {
+                if (bar.getAttribute("data-value") === currentVal) {
+                    bar.classList.add("active");
+                }
+            });
+        }
+    }
+
+    // Responsive grid adjustment
+    function adjustMemberGrid() {
+        if (window.innerWidth < 768) {
+            membersGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(120px, 1fr))";
+        } else {
+            membersGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(150px, 1fr))";
+        }
+    }
+
+    // Card animation on scroll
+    function animateCardsOnScroll() {
+        const cards = document.querySelectorAll(".form-card");
+        cards.forEach((card, index) => {
+            const cardPosition = card.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight / 1.3;
+
+            if (cardPosition < screenPosition) {
+                card.style.opacity = "1";
+                card.style.transform = "translateY(0)";
+            }
+        });
+    }
+
+    // Initialize card animations
+    function initCardAnimations() {
+        const cards = document.querySelectorAll(".form-card");
+        cards.forEach((card, index) => {
+            card.style.opacity = "0";
+            card.style.transform = "translateY(20px)";
+            card.style.transition = `all 0.5s ease ${index * 0.1}s`;
+        });
+        animateCardsOnScroll();
+    }
+
+    // Initialize tooltips
+    function initTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    // Event listeners
+    if (selectAllBtn) selectAllBtn.addEventListener("click", selectAllMembers);
+    if (clearAllBtn) clearAllBtn.addEventListener("click", clearAllMembers);
+    memberCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener("change", saveSelectedMembers);
+    });
+    if (rangeInput) rangeInput.addEventListener("input", updateRangeBubble);
+    if (form) form.addEventListener("submit", handleFormSubmit);
+    window.addEventListener("scroll", animateCardsOnScroll);
+    window.addEventListener("resize", adjustMemberGrid);
+
+    // Initializations
+    loadSelectedMembers();
+    updateRangeBubble();
+    initIntensityBars();
+    initCardAnimations();
+    initTooltips();
+    adjustMemberGrid();
+});
+</script>
+</div>
+
+<style>
+  /* Add these new styles to your existing CSS */
+
+  .member-checkbox-container {
+    position: relative;
+    margin-bottom: 0.5rem;
+  }
+
+  .captain-toggle-option {
+    padding: 0.5rem;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 0 0 8px 8px;
+    margin-top: -5px;
+    border-top: 1px dashed rgba(0,0,0,0.1);
+  }
+
+  .captain-toggle {
+    text-align: right;
+  }
+
+  .captain-toggle .btn {
+    transition: all 0.3s ease;
+  }
+
+  .captain-toggle .btn:hover {
+    background: rgba(255, 193, 7, 0.2);
+  }
+
+  /* Adjust member grid for new layout */
+  .members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+  }
+
+  /* Make sure checkboxes stay visible */
+  .member-checkbox input[type="checkbox"]:checked + label {
+    z-index: 2;
+    position: relative;
+  }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Existing JavaScript code remains the same
+
+    // Add these new functions for captain toggling
+    const toggleCaptainsBtn = document.getElementById('toggleCaptainsBtn');
+    const captainOptions = document.querySelectorAll('.captain-toggle-option');
+    let captainsVisible = false;
+
+    if (toggleCaptainsBtn) {
+        toggleCaptainsBtn.addEventListener('click', function() {
+            captainsVisible = !captainsVisible;
+
+            captainOptions.forEach(option => {
+                option.style.display = captainsVisible ? 'block' : 'none';
+            });
+
+            this.innerHTML = captainsVisible
+                ? '<i class="bi bi-star-fill"></i> Hide Captain Options'
+                : '<i class="bi bi-star-fill"></i> Show Captain Options';
+
+            this.classList.toggle('active', captainsVisible);
+        });
+    }
+
+    // Update form submission to handle captains
+    const form = document.getElementById('teamGeneratorForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Existing validation code
+
+            // Add any additional captain validation if needed
+        });
+    }
+
+    // Keep all your existing JavaScript code
+});
+</script>
+
+{% endblock %}

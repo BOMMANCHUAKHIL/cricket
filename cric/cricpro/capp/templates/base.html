@@ -1,0 +1,251 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Team Manager | Cricket Teams and Matches App{% endblock %}</title>
+  <meta name="description" content="Manage cricket teams, players, and match scores with this powerful Django web app.">
+  <meta name="keywords" content="SrihariCricket,Team Manager, Cricket Team Manager, Match Score App, Django Cricket App, Cricket Match Manager">
+    <link rel="icon" type="image/png" href="{% static 'capp/images/1.jpg' %}">
+  <link rel="canonical" href="https://srihari453.pythonanywhere.com/" />
+  <link rel="shortcut icon" href="{% static 'capp/images/1.jpg' %}">
+  <!-- ✅ Google Site Verification -->
+  <meta name="google-site-verification" content="UmybHS8l4yeKfWOY_ZASjfK47mAgjma_dK5ktfim688">
+
+  <meta name="google-site-verification" content="otAi6LkYrYLYm9Ss2XhwbkqNANgdNMzkq8I5g_xF-qc">
+  <meta name="google-site-verification" content="LsVdgf5WYOmivA7alTdQcIaOCdX3iJvaR0lemPbP8Hs" />
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <!-- Custom CSS -->
+
+  <style>
+    :root {
+      --primary-color: #4edddf;
+      --secondary-color: #f8f9fc;
+      --accent-color: #2e59d9;
+      --text-color: #5a5c69;
+    }
+
+    body {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .navbar {
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+      padding: 0.75rem 1rem;
+    }
+
+    .navbar-brand {
+      font-weight: 800;
+      font-size: 1.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 0.35rem;
+      transition: all 0.3s;
+    }
+
+    .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .container {
+      max-width: 1200px;
+    }
+
+    .page-header {
+      border-bottom: 1px solid #e3e6f0;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .card {
+      border: none;
+      border-radius: 0.35rem;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      background-color: #f8f9fc;
+      border-bottom: 1px solid #e3e6f0;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
+    .table {
+      border-radius: 0.35rem;
+      overflow: hidden;
+    }
+
+    .table th {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+    }
+
+    footer {
+      background-color: white;
+      padding: 1.5rem 0;
+      margin-top: 3rem;
+      border-top: 1px solid #e3e6f0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌟 Combined Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" href="#">
+      <i class="bi bi-people-fill me-2"></i> SPL TeamSplitter Pro
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavCombined">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNavCombined">
+      <ul class="navbar-nav me-auto">
+
+        {% if user.is_authenticated %}
+          <!-- 🎯 Team Management Links -->
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'add_member' %}">
+              <i class="bi bi-person-plus me-1"></i> Add Members
+            </a>
+          </li>
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'generate_teams' %}">
+              <i class="bi bi-shuffle me-1"></i> Generate Teams
+            </a>
+          </li>
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'team_list' %}">
+              <i class="bi bi-eye me-1"></i> View Teams
+            </a>
+          </li>
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'reorder_members' %}">
+              <i class="bi bi-arrow-down-up me-1"></i> Reorder Members
+            </a>
+          </li>
+          <!-- 🏏 Cricket Tracker Dropdown -->
+            <li class="nav-item dropdown mx-1">
+              <a class="nav-link dropdown-toggle" href="#" id="cricketDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-trophy me-1"></i> Cricket Tracker
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="cricketDropdown">
+                <li>
+                  <a class="dropdown-item" href="{% url 'start_match' %}">
+                    <i class="bi bi-pencil-square me-1"></i> Start Match
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'tournament' %}">
+                    <i class="bi bi-trophy me-1"></i> Tournament
+                  </a>
+                </li>
+              </ul>
+            </li>
+             <!-- Coin Flip Link -->
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'coin_flip' %}">
+              <i class="bi bi-coin me-1"></i> Coin Flip
+            </a>
+          </li>
+
+
+        {% endif %}
+      </ul>
+
+      <!-- 🔐 Auth Links -->
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+          <li class="nav-item mx-1">
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="nav-link btn btn-link text-warning p-0 m-0" style="text-decoration: none;">
+                <i class="bi bi-box-arrow-right me-1"></i> Logout
+              </button>
+            </form>
+          </li>
+        {% else %}
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'login' %}">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Login
+            </a>
+          </li>
+          <li class="nav-item mx-1">
+            <a class="nav-link" href="{% url 'signup' %}">
+              <i class="bi bi-person-plus me-1"></i> Sign Up
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <!-- 🎯 Main Content Area -->
+  <main class="container my-4">
+    {% block content %}
+    <!-- Content will be injected here from child templates -->
+    {% endblock %}
+  </main>
+
+  <!-- 🌈 Footer -->
+  <footer class="text-center">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-md-start">
+          <p class="mb-0">© 2023 TeamSplitter Pro. All rights reserved.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <a href="#" class="text-decoration-none me-3">Privacy Policy</a>
+          <a href="#" class="text-decoration-none">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom JS -->
+  <script>
+    // Enable tooltips everywhere
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Add active class to current nav item
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if(link.href === window.location.href) {
+        link.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>

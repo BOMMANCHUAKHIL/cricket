@@ -1,0 +1,51 @@
+<!-- team_lists.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Debug Info -->
+    <div class="alert alert-info">
+        Debug Info: 
+        Found {{ debug_team_count }} teams | 
+        {{ generations|length }} generations
+    </div>
+
+    {% if generations %}
+    <h1>Your Team Generations</h1>
+    {% for generation_id, generation_data in generations %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Generation {{ forloop.counter }}</h2>
+            <small>Created {{ generation_data.created_at|timesince }} ago</small>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for team in generation_data.teams %}
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>{{ team.name }}</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for member in team.members.all %}
+                                <li class="list-group-item">
+                                    {{ member.name }} (#{{ member.position }})
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-warning">
+        No teams found. <a href="{% url 'generate_teams' %}">Generate some teams?</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
