@@ -1,4 +1,4 @@
-﻿amqp==5.3.1
+amqp==5.3.1
 anyio==4.6.2.post1
 argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
@@ -120,8 +120,8 @@ python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-json-logger==2.0.7
 pytimeparse2==1.7.1
-python-3.10.12
-pywinpty==2.0.14
+#python-3.10.12
+pywinpty==2.0.14; sys_platform == 'win32'
 PyYAML==6.0.2
 pyzmq==26.2.0
 razorpay==1.4.2
