@@ -9,3 +9,7 @@ def get_item(dictionary, key):
 @register.filter
 def subtract(value, arg):
     return value - arg
+
+@register.filter
+def mod(value, arg):
+    return value % arg
