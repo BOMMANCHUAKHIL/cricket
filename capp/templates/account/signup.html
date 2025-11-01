@@ -1,0 +1,575 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}Sign Up - Cricket Pro{% endblock %}
+
+{% block content %}
+<!-- 🌌 Futuristic Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Kanit:wght@400;600&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  /* 🌠 Cosmic Base Styles */
+  :root {
+    --neon-blue: #00f7ff;
+    --neon-purple: #9600ff;
+    --neon-red: #ff003c;
+    --neon-green: #00ff88;
+    --deep-space: #0a0a20;
+    --starlight: rgba(255, 255, 255, 0.9);
+  }
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    min-height: 100vh;  /* Changed from height: 100% */
+    overflow-x: hidden;  /* Changed from overflow: hidden */
+    overflow-y: auto;    /* Added to enable vertical scrolling */
+    font-family: 'Montserrat', sans-serif;
+    background: var(--deep-space);
+    color: white;
+  }
+
+  /* 🚀 Canvas Background */
+  #matrixCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.7;
+  }
+
+  /* 💎 Cyberpunk Card */
+  .cyber-card {
+    background: rgba(15, 15, 30, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid rgba(0, 247, 255, 0.3);
+    box-shadow:
+      0 0 25px rgba(0, 247, 255, 0.2),
+      0 0 50px rgba(150, 0, 255, 0.15),
+      inset 0 0 15px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .cyber-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(0, 255, 255, 0) 0%,
+      rgba(0, 255, 255, 0.1) 50%,
+      rgba(0, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: shine 6s infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0.5deg); }
+    50% { transform: translateY(-15px) rotate(-0.5deg); }
+  }
+
+  @keyframes shine {
+    0% { left: -100%; top: -100%; }
+    100% { left: 100%; top: 100%; }
+  }
+
+  /* 🛰️ Header Styles */
+  .signup-header {
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .signup-title {
+    font-size: 2rem;
+    color: var(--neon-green);
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+  }
+
+  .signup-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 15px var(--neon-green);
+    animation: pulse 2s infinite alternate;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 0.8; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.1); }
+  }
+
+  /* 🔥 Google Signup Button */
+  .btn-google {
+    background: linear-gradient(90deg, var(--neon-red), #ff5252) !important;
+    border: none !important;
+    padding: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    color: white !important;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-family: 'Kanit', sans-serif;
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .btn-google:hover {
+    transform: translateY(-2px) !important;
+    box-shadow:
+      0 0 20px rgba(255, 0, 60, 0.5),
+      0 0 40px rgba(255, 82, 82, 0.3) !important;
+    color: white !important;
+  }
+
+  .btn-google::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+    z-index: -1;
+  }
+
+  .btn-google:hover::before {
+    left: 100%;
+  }
+
+  /* 🔮 Or Separator */
+  .or-separator {
+    text-align: center;
+    margin: 25px 0;
+    position: relative;
+    color: var(--neon-green);
+    font-weight: 600;
+  }
+
+  .or-separator::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+  }
+
+  .or-separator span {
+    background: rgba(15, 15, 30, 0.9);
+    padding: 0 20px;
+    position: relative;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  /* 👨‍🚀 Form Elements */
+  .form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--neon-blue);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      background: rgba(20, 20, 40, 0.9); /* darker background */
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #ffffff; /* bright white text */
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #00f7ff;
+      box-shadow: 0 0 15px rgba(0, 247, 255, 0.4);
+      background: rgba(25, 25, 60, 0.95);
+      color: #ffffff;
+    }
+
+    .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    /* Fix Chrome autofill hiding text */
+    input:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 30px rgba(25, 25, 60, 0.95) inset !important;
+      -webkit-text-fill-color: #ffffff !important;
+    }
+
+
+  /* 🪐 Submit Button */
+  .btn-matrix {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    margin-top: 1rem;
+  }
+
+  .btn-matrix:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 20px rgba(0, 255, 136, 0.5),
+      0 0 40px rgba(0, 247, 255, 0.3);
+  }
+
+  .btn-matrix::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+    z-index: -1;
+  }
+
+  .btn-matrix:hover::before {
+    left: 100%;
+  }
+
+  /* 🔗 Footer Links */
+  .card-footer {
+    background: transparent !important;
+    border-top: 1px solid rgba(0, 247, 255, 0.2) !important;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+
+  .card-footer a {
+    color: var(--neon-blue) !important;
+    text-decoration: none;
+    position: relative;
+    font-weight: 600;
+  }
+
+  .card-footer a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--neon-blue);
+    transition: width 0.3s ease;
+  }
+
+  .card-footer a:hover::after {
+    width: 100%;
+  }
+
+  /* 🌐 Container */
+  .signup-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* ⚡ Error Messages */
+  .alert-matrix {
+    background: rgba(255, 50, 50, 0.2);
+    border: 1px solid rgba(255, 50, 50, 0.5);
+    color: #ffcccc;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    font-family: 'Kanit', sans-serif;
+  }
+
+  .field-errors {
+    color: var(--neon-red);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    text-shadow: 0 0 5px rgba(255, 0, 60, 0.5);
+  }
+
+  /* 📱 Responsive Adjustments */
+  @media (max-width: 768px) {
+    .cyber-card {
+      padding: 2rem;
+      margin: 1rem;
+    }
+
+    .signup-title {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+
+<!-- 🌌 Matrix Rain Canvas -->
+<canvas id="matrixCanvas"></canvas>
+
+<!-- 🚀 Main Content -->
+<div class="signup-container">
+  <div class="cyber-card">
+    <div class="signup-header">
+      <div class="signup-icon">🌌</div>
+      <div class="signup-title">CREATE COSMIC ACCOUNT</div>
+    </div>
+
+    <!-- Optional: Google Signup Button -->
+
+    <div class="social-signup">
+    <!-- Use direct URL instead of template tag -->
+    <a href="/accounts/google/login/" class="btn-google">
+            🌟 Sign up with Google
+        </a>
+    </div>
+
+    <div class="or-separator">
+        <span>Cosmic Divider</span>
+    </div>
+
+
+    <!-- Regular Signup Form -->
+    <form method="post" action="{% url 'account_signup' %}">
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <div class="alert-matrix">
+          ⚠️ Cosmic registration failed. Please check the form below.
+        </div>
+      {% endif %}
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="id_email">📧 Email Address</label>
+        <input type="email" name="email" id="id_email" class="form-control"
+               placeholder="Enter your cosmic email..." required
+               value="{{ form.email.value|default:'' }}">
+        {% if form.email.errors %}
+          <div class="field-errors">
+            {% for error in form.email.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="id_username">👤 Username</label>
+        <input type="text" name="username" id="id_username" class="form-control"
+               placeholder="Choose a cosmic username..." required
+               value="{{ form.username.value|default:'' }}">
+        {% if form.username.errors %}
+          <div class="field-errors">
+            {% for error in form.username.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="id_password1">🔒 Password</label>
+        <input type="password" name="password1" id="id_password1" class="form-control"
+               placeholder="Create a secure password..." required>
+        {% if form.password1.errors %}
+          <div class="field-errors">
+            {% for error in form.password1.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Password Confirmation Field -->
+      <div class="form-group">
+        <label for="id_password2">🔁 Confirm Password</label>
+        <input type="password" name="password2" id="id_password2" class="form-control"
+               placeholder="Confirm your cosmic password..." required>
+        {% if form.password2.errors %}
+          <div class="field-errors">
+            {% for error in form.password2.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-matrix">
+        🚀 LAUNCH COSMIC JOURNEY
+      </button>
+    </form>
+
+    <div class="card-footer">
+      <span style="color: var(--neon-blue);">Already have cosmic access?</span>
+      <a href="{% url 'account_login' %}" style="margin-left: 5px;">🔐 Login to Portal</a>
+    </div>
+  </div>
+</div>
+
+<!-- 🌌 Matrix Rain JavaScript (Same as login) -->
+<script>
+  // Matrix Rain Effect
+  const canvas = document.getElementById('matrixCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Set canvas to full window size
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Matrix characters - mix of Katakana, Latin, and symbols
+  const matrixChars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$#@!%&*";
+
+  // Set font size and calculate columns
+  const fontSize = 16;
+  const columns = canvas.width / fontSize;
+
+  // Create an array of drops - one per column
+  const drops = [];
+  for (let i = 0; i < columns; i++) {
+    drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
+  }
+
+  // Interactive effect - mouse creates waves in the matrix
+  let mouseX = null;
+  let mouseY = null;
+
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  window.addEventListener('mouseout', () => {
+    mouseX = null;
+    mouseY = null;
+  });
+
+  // Enhanced drawing function with mouse interaction
+  function enhancedDraw() {
+    // Black background with opacity for trail effect
+    ctx.fillStyle = 'rgba(5, 5, 15, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Set style for characters
+    ctx.font = `${fontSize}px monospace`;
+
+    // Loop over drops
+    for (let i = 0; i < drops.length; i++) {
+      // Get random character
+      const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      // Mouse interaction - create wave effect
+      if (mouseX && mouseY) {
+        const dx = mouseX - x;
+        const dy = mouseY - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 100) {
+          // Change color near mouse (cyber green/blue)
+          const hue = 160 + (distance / 100) * 60;
+          ctx.fillStyle = `hsla(${hue}, 100%, 60%, 0.8)`;
+          // Push drops away from mouse
+          if (distance < 80) {
+            drops[i] += 0.5;
+          }
+        } else {
+          // Default matrix green with variation
+          const brightness = 30 + Math.random() * 40;
+          ctx.fillStyle = `hsl(120, 100%, ${brightness}%)`;
+        }
+      } else {
+        // Default matrix green with variation when no mouse interaction
+        const brightness = 30 + Math.random() * 40;
+        ctx.fillStyle = `hsl(120, 100%, ${brightness}%)`;
+      }
+
+      // Draw character
+      ctx.fillText(text, x, y);
+
+      // Reset drop to top when it reaches bottom
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+
+      // Move drop down with slight randomness
+      drops[i] += 0.5 + Math.random() * 0.5;
+    }
+
+    // Call the next frame
+    requestAnimationFrame(enhancedDraw);
+  }
+
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // Recalculate columns
+    const newColumns = canvas.width / fontSize;
+    // Adjust drops array
+    if (newColumns > drops.length) {
+      // Add new columns
+      for (let i = drops.length; i < newColumns; i++) {
+        drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
+      }
+    } else if (newColumns < drops.length) {
+      // Remove extra columns
+      drops.length = newColumns;
+    }
+  });
+
+  // Start the enhanced animation
+  enhancedDraw();
+</script>
+{% endblock %}

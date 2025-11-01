@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}Complete Sign Up - Cricket Pro{% endblock %}
+
+{% block content %}
+<!-- 🌌 Futuristic Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Kanit:wght@400;600&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  /* 🌠 Cosmic Base Styles */
+  :root {
+    --neon-blue: #00f7ff;
+    --neon-purple: #9600ff;
+    --neon-red: #ff003c;
+    --neon-green: #00ff88;
+    --deep-space: #0a0a20;
+    --starlight: rgba(255, 255, 255, 0.9);
+  }
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    background: var(--deep-space);
+    color: white;
+  }
+
+  /* 🚀 Canvas Background */
+  #matrixCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.7;
+  }
+
+  /* 💎 Cyberpunk Card */
+  .cyber-card {
+    background: rgba(15, 15, 30, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid rgba(0, 247, 255, 0.3);
+    box-shadow:
+      0 0 25px rgba(0, 247, 255, 0.2),
+      0 0 50px rgba(150, 0, 255, 0.15),
+      inset 0 0 15px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .cyber-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(0, 255, 255, 0) 0%,
+      rgba(0, 255, 255, 0.1) 50%,
+      rgba(0, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: shine 6s infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0.5deg); }
+    50% { transform: translateY(-15px) rotate(-0.5deg); }
+  }
+
+  @keyframes shine {
+    0% { left: -100%; top: -100%; }
+    100% { left: 100%; top: 100%; }
+  }
+
+  /* 🛰️ Header Styles */
+  .signup-header {
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .signup-title {
+    font-size: 2rem;
+    color: var(--neon-green);
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+  }
+
+  .signup-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 15px var(--neon-green);
+    animation: pulse 2s infinite alternate;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 0.8; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.1); }
+  }
+
+  /* 👨‍🚀 Form Elements */
+  .form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--neon-blue);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      background: rgba(20, 20, 40, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #00f7ff;
+      box-shadow: 0 0 15px rgba(0, 247, 255, 0.4);
+      background: rgba(25, 25, 60, 0.95);
+      color: #ffffff;
+    }
+
+    .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+  /* 🪐 Submit Button */
+  .btn-matrix {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    margin-top: 1rem;
+  }
+
+  .btn-matrix:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 20px rgba(0, 255, 136, 0.5),
+      0 0 40px rgba(0, 247, 255, 0.3);
+  }
+
+  /* ⚡ Error Messages */
+  .alert-matrix {
+    background: rgba(255, 50, 50, 0.2);
+    border: 1px solid rgba(255, 50, 50, 0.5);
+    color: #ffcccc;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    font-family: 'Kanit', sans-serif;
+  }
+
+  .field-errors {
+    color: var(--neon-red);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    text-shadow: 0 0 5px rgba(255, 0, 60, 0.5);
+  }
+
+  /* 🌐 Container */
+  .signup-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* 📱 Responsive Adjustments */
+  @media (max-width: 768px) {
+    .cyber-card {
+      padding: 2rem;
+      margin: 1rem;
+    }
+
+    .signup-title {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+
+<!-- 🌌 Matrix Rain Canvas -->
+<canvas id="matrixCanvas"></canvas>
+
+<!-- 🚀 Main Content -->
+<div class="signup-container">
+  <div class="cyber-card">
+    <div class="signup-header">
+      <div class="signup-icon">🌌</div>
+      <div class="signup-title">COMPLETE COSMIC SIGNUP</div>
+      <p style="color: var(--neon-blue); text-align: center; margin-top: 1rem;">
+        You are about to use your Google account to login to <strong>Cricket Pro App</strong>.<br>
+        As a final step, please complete the following form:
+      </p>
+    </div>
+
+    <!-- Social Signup Form -->
+    <form method="post" action="{% url 'socialaccount_signup' %}">
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <div class="alert-matrix">
+          ⚠️ Cosmic registration failed. Please check the form below.
+        </div>
+      {% endif %}
+
+      <!-- Display non-field errors -->
+      {% if form.non_field_errors %}
+        <div class="alert-matrix">
+          {% for error in form.non_field_errors %}
+            {{ error }}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="id_email">📧 Email Address</label>
+        <input type="email" name="email" id="id_email" class="form-control"
+               placeholder="Your cosmic email..." required
+               value="{{ form.email.value|default:'' }}">
+        {% if form.email.errors %}
+          <div class="field-errors">
+            {% for error in form.email.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="id_username">👤 Username</label>
+        <input type="text" name="username" id="id_username" class="form-control"
+               placeholder="Choose a cosmic username..." required
+               value="{{ form.username.value|default:'' }}">
+        {% if form.username.errors %}
+          <div class="field-errors">
+            {% for error in form.username.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Hidden Email Field (if provided by social account) -->
+      {% if email %}
+        <input type="hidden" name="email" value="{{ email }}">
+      {% endif %}
+
+      <button type="submit" class="btn-matrix">
+        🚀 COMPLETE COSMIC JOURNEY
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- 🌌 Matrix Rain JavaScript -->
+<script>
+  // Matrix Rain Effect
+  const canvas = document.getElementById('matrixCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Set canvas to full window size
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Matrix characters
+  const matrixChars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$#@!%&*";
+
+  // Set font size and calculate columns
+  const fontSize = 16;
+  const columns = canvas.width / fontSize;
+
+  // Create an array of drops
+  const drops = [];
+  for (let i = 0; i < columns; i++) {
+    drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
+  }
+
+  // Matrix animation
+  function draw() {
+    // Black background with opacity for trail effect
+    ctx.fillStyle = 'rgba(5, 5, 15, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Set style for characters
+    ctx.font = `${fontSize}px monospace`;
+
+    // Loop over drops
+    for (let i = 0; i < drops.length; i++) {
+      // Get random character
+      const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      // Matrix green with variation
+      const brightness = 30 + Math.random() * 40;
+      ctx.fillStyle = `hsl(120, 100%, ${brightness}%)`;
+
+      // Draw character
+      ctx.fillText(text, x, y);
+
+      // Reset drop to top when it reaches bottom
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+
+      // Move drop down
+      drops[i] += 0.5 + Math.random() * 0.5;
+    }
+
+    // Call the next frame
+    requestAnimationFrame(draw);
+  }
+
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  // Start the animation
+  draw();
+</script>
+{% endblock %}

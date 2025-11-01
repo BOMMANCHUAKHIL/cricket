@@ -1,0 +1,603 @@
+{% extends "base.html" %}
+{% load static %}
+{% load socialaccount %}
+
+{% block title %}Login - Cricket Pro{% endblock %}
+
+{% block content %}
+<!-- 🌌 Futuristic Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  /* 🌠 Cosmic Base Styles */
+  :root {
+    --neon-blue: #00f7ff;
+    --neon-purple: #9600ff;
+    --neon-red: #ff003c;
+    --neon-green: #00ff88;
+    --deep-space: #0a0a20;
+    --starlight: rgba(255, 255, 255, 0.9);
+  }
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    min-height: 100vh;  /* Changed from height: 100% */
+    overflow-x: hidden;  /* Changed from overflow: hidden */
+    overflow-y: auto;
+    font-family: 'Montserrat', sans-serif;
+    background: var(--deep-space);
+    color: white;
+  }
+
+  /* 🚀 Canvas Background */
+  #particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+
+  /* 💎 Cyber Card */
+  .cyber-card {
+    background: rgba(15, 15, 30, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid rgba(0, 247, 255, 0.3);
+    box-shadow:
+      0 0 25px rgba(0, 247, 255, 0.2),
+      0 0 50px rgba(150, 0, 255, 0.15),
+      inset 0 0 15px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .cyber-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(0, 255, 255, 0) 0%,
+      rgba(0, 255, 255, 0.1) 50%,
+      rgba(0, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: shine 6s infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0.5deg); }
+    50% { transform: translateY(-15px) rotate(-0.5deg); }
+  }
+
+  @keyframes shine {
+    0% { left: -100%; top: -100%; }
+    100% { left: 100%; top: 100%; }
+  }
+
+  /* 🛰️ Header Styles */
+  .card-header {
+    background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)) !important;
+    border: none !important;
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    padding: 1.5rem !important;
+  }
+
+  .card-header h4 {
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+    font-size: 1.5rem;
+  }
+
+  /* 🔥 Google Login Button */
+  .btn-google {
+    background: linear-gradient(90deg, var(--neon-red), #ff5252) !important;
+    border: none !important;
+    padding: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    color: white !important;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .btn-google:hover {
+    transform: translateY(-2px) !important;
+    box-shadow:
+      0 0 20px rgba(255, 0, 60, 0.5),
+      0 0 40px rgba(255, 82, 82, 0.3) !important;
+    color: white !important;
+  }
+
+  /* 🔮 Or Separator */
+  .or-separator {
+    text-align: center;
+    margin: 25px 0;
+    position: relative;
+    color: var(--neon-blue);
+    font-weight: 600;
+  }
+
+  .or-separator::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+  }
+
+  .or-separator span {
+    background: rgba(15, 15, 30, 0.9);
+    padding: 0 20px;
+    position: relative;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  /* 👨‍🚀 Form Elements */
+  .form-label {
+    color: var(--neon-blue);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(10, 10, 30, 0.7);
+    border: 1px solid rgba(0, 247, 255, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+    background: rgba(20, 20, 50, 0.9);
+  }
+
+  input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* 🪐 Submit Button */
+  .btn-success {
+    background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)) !important;
+    border: none !important;
+    padding: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    width: 100%;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px) !important;
+    box-shadow:
+      0 0 20px rgba(0, 255, 136, 0.5),
+      0 0 40px rgba(0, 247, 255, 0.3) !important;
+  }
+
+  /* 🔗 Footer Link */
+  .card-footer {
+    background: transparent !important;
+    border-top: 1px solid rgba(0, 247, 255, 0.2) !important;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+
+  .card-footer a {
+    color: var(--neon-green) !important;
+    text-decoration: none;
+    position: relative;
+    font-weight: 600;
+  }
+
+  .card-footer a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--neon-green);
+    transition: width 0.3s ease;
+  }
+
+  .card-footer a:hover::after {
+    width: 100%;
+  }
+
+  /* 🌐 Container */
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* ⚡ Error Messages */
+  .error-message {
+    color: var(--neon-red);
+    font-size: 0.85rem;
+    margin-top: 5px;
+    text-shadow: 0 0 5px rgba(255, 0, 60, 0.5);
+    display: block;
+  }
+
+  .form-errors {
+    background: rgba(255, 0, 60, 0.1);
+    border: 1px solid var(--neon-red);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    backdrop-filter: blur(5px);
+  }
+</style>
+
+<!-- 🌌 Particle Canvas -->
+<canvas id="particleCanvas"></canvas>
+
+<!-- 🚀 Main Content -->
+<div class="container">
+  <div class="cyber-card">
+    <div class="card-header">
+      <h4>🌌 ACCESS COSMIC PORTAL</h4>
+    </div>
+    <div class="card-body">
+
+       <!-- 🌟 Google Login Button -->
+        <div class="social-login">
+            <a href="/accounts/google/login/" class="btn-google">
+                🌟 Login with Google
+            </a>
+        </div>
+
+        <div class="or-separator">
+            <span>Cosmic Divider</span>
+        </div>
+
+      <!-- Regular Login Form -->
+      <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+
+        {% if form.errors %}
+          <div class="form-errors">
+            <strong>⚠️ Cosmic Authentication Failed</strong>
+            <br>Please check your credentials.
+          </div>
+        {% endif %}
+
+        <!-- Login Field -->
+        <div class="form-group">
+          <label class="form-label">
+            📧 Email or Username
+          </label>
+          <input type="text" name="login" id="id_login" required
+                 placeholder="Enter your cosmic identity...">
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label class="form-label">
+            🔒 Password
+          </label>
+          <input type="password" name="password" id="id_password" required
+                 placeholder="Enter your secret code...">
+        </div>
+
+        <!-- Remember Me -->
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="remember" id="id_remember">
+          <label for="id_remember" style="color: var(--neon-blue); margin: 0;">
+            Remember my cosmic session
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-success">
+          🚀 LAUNCH INTO PORTAL
+        </button>
+      </form>
+
+    </div>
+    <div class="card-footer">
+      <span style="color: var(--neon-blue);">New to the cosmos?</span>
+      <a href="/accounts/signup/" style="margin-left: 5px;">🌠 Create Cosmic Account</a>
+    </div>
+  </div>
+</div>
+
+<!-- 🌌 Particle Animation JavaScript -->
+<script>
+  // Particle Canvas Setup
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Configuration
+  const config = {
+    particleCount: 150,
+    particleMaxSize: 3,
+    connectionDistance: 150,
+    particleSpeed: 0.5,
+    hue: 180,
+    hueCycleSpeed: 0.5,
+    repulsionRadius: 100
+  };
+
+  // Mouse position
+  const mouse = { x: null, y: null, radius: 150 };
+
+  // Track mouse position
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.x;
+    mouse.y = e.y;
+  });
+
+  window.addEventListener('mouseout', () => {
+    mouse.x = undefined;
+    mouse.y = undefined;
+  });
+
+  // Particle class
+  class Particle {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * config.particleMaxSize + 1;
+      this.baseX = this.x;
+      this.baseY = this.y;
+      this.density = (Math.random() * 30) + 1;
+      this.vx = (Math.random() - 0.5) * config.particleSpeed;
+      this.vy = (Math.random() - 0.5) * config.particleSpeed;
+      this.hue = Math.random() * 60 + config.hue - 30;
+      this.lightness = Math.random() * 20 + 50;
+      this.alpha = Math.random() * 0.4 + 0.1;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.fillStyle = `hsla(${this.hue}, 100%, ${this.lightness}%, ${this.alpha})`;
+      ctx.fill();
+    }
+
+    update() {
+      // Boundary check with bounce
+      if (this.x < 0 || this.x > canvas.width) {
+        this.vx = -this.vx * 0.8;
+        this.x = this.x < 0 ? 0 : canvas.width;
+      }
+      if (this.y < 0 || this.y > canvas.height) {
+        this.vy = -this.vy * 0.8;
+        this.y = this.y < 0 ? 0 : canvas.height;
+      }
+
+      // Mouse repulsion
+      if (mouse.x && mouse.y) {
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < mouse.radius) {
+          const forceDirectionX = dx / distance;
+          const forceDirectionY = dy / distance;
+          const force = (mouse.radius - distance) / mouse.radius * 2;
+
+          this.vx -= forceDirectionX * force * 0.5;
+          this.vy -= forceDirectionY * force * 0.5;
+        }
+      }
+
+      // Apply velocity with damping
+      this.vx *= 0.98;
+      this.vy *= 0.98;
+
+      // Move particle
+      this.x += this.vx;
+      this.y += this.vy;
+    }
+  }
+
+  // Create particles
+  let particles = [];
+  function initParticles() {
+    particles = [];
+    for (let i = 0; i < config.particleCount; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  // Connect particles with lines
+  function connectParticles() {
+    for (let a = 0; a < particles.length; a++) {
+      for (let b = a; b < particles.length; b++) {
+        const dx = particles[a].x - particles[b].x;
+        const dy = particles[a].y - particles[b].y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < config.connectionDistance) {
+          const opacity = 1 - (distance / config.connectionDistance);
+          ctx.strokeStyle = `hsla(${config.hue}, 100%, 70%, ${opacity * 0.2})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(particles[a].x, particles[a].y);
+          ctx.lineTo(particles[b].x, particles[b].y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  // Main animation loop
+  function animate() {
+    // Clear with semi-transparent for motion trails
+    ctx.fillStyle = 'rgba(5, 10, 20, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Update hue for color cycling
+    config.hue += config.hueCycleSpeed;
+    if (config.hue > 360) config.hue = 0;
+
+    // Draw elements
+    connectParticles();
+
+    // Update and draw particles
+    particles.forEach(particle => {
+      particle.update();
+      particle.draw();
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  // Handle window resize
+  function handleResize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    initParticles();
+  }
+
+  // Initialize and start animation
+  window.addEventListener('resize', handleResize);
+  initParticles();
+  animate();
+
+
+    /* 🔥 Google Login Button */
+    .btn-google {
+        background: linear-gradient(90deg, var(--neon-red), #ff5252) !important;
+        border: none !important;
+        padding: 14px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px !important;
+        transition: all 0.3s ease !important;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        color: white !important;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-family: 'Kanit', sans-serif;
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .btn-google:hover {
+        transform: translateY(-2px) !important;
+        box-shadow:
+            0 0 20px rgba(255, 0, 60, 0.5),
+            0 0 40px rgba(255, 82, 82, 0.3) !important;
+        color: white !important;
+    }
+
+    .btn-google::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+        z-index: -1;
+    }
+
+    .btn-google:hover::before {
+        left: 100%;
+    }
+
+    /* 🔮 Or Separator */
+    .or-separator {
+        text-align: center;
+        margin: 25px 0;
+        position: relative;
+        color: var(--neon-green);
+        font-weight: 600;
+    }
+
+    .or-separator::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+    }
+
+    .or-separator span {
+        background: rgba(15, 15, 30, 0.9);
+        padding: 0 20px;
+        position: relative;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Social Login Container */
+    .social-login {
+        margin-bottom: 1.5rem;
+    }
+</script>
+
+{% endblock %}
