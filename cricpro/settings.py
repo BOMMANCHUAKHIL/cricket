@@ -31,7 +31,12 @@ SECRET_KEY = "django-insecure-da^tfo2o_2lfuh^^eii3lv4j#_k7%7e9voeeh3p4-)@&^3uah$
 #     '127.0.0.1',
 # ]
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'cricket-x8ql.onrender.com',
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',
+]
 
 
 # Application definition
