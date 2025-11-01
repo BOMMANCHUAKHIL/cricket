@@ -23,9 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-da^tfo2o_2lfuh^^eii3lv4j#_k7%7e9voeeh3p4-)@&^3uah$"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# DEBUG = False
 
-
+# ALLOWED_HOSTS = [
+#     'srihari453.pythonanywhere.com',
+#     'localhost',
+#     '127.0.0.1',
+# ]
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -37,9 +43,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django.contrib.sites',
     "capp",
     'widget_tweaks',
     'mathfilters',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "cricpro.urls"
@@ -57,7 +69,7 @@ ROOT_URLCONF = "cricpro.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -65,6 +77,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'capp.context_processors.live_matches_context',
             ],
         },
     },
@@ -131,9 +144,6 @@ USE_TZ = True
 TIME_ZONE = 'Asia/Kolkata'
 
 USE_TZ = True
-ALLOWED_HOSTS = [
-    '*'
-]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -145,8 +155,104 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+# LOGIN_REDIRECT_URL = '/'
+# LOGOUT_REDIRECT_URL = '/login/'
+# LOGIN_URL = '/accounts/login/'
+
+
+# # Add after INSTALLED_APPS
+# SITE_ID = 1
+
+# # Authentication backends
+# AUTHENTICATION_BACKENDS = [
+#     'django.contrib.auth.backends.ModelBackend',
+#     'allauth.account.auth_backends.AuthenticationBackend',
+# ]
+# ACCOUNT_FORMS = {
+#     'login': 'capp.forms.CustomLoginForm',
+#     'signup': 'capp.forms.CustomSignupForm',
+# }
+# # Allauth settings
+# # With these new settings:
+# ACCOUNT_LOGIN_METHODS = {'username', 'email'}
+# ACCOUNT_SIGNUP_FIELDS = ['email*', 'username', 'password1*', 'password2*']
+# ACCOUNT_EMAIL_VERIFICATION = 'optional'
+# ACCOUNT_SESSION_REMEMBER = True
+# ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+# # # Social account providers
+# # SOCIALACCOUNT_PROVIDERS = {
+# #     'google': {
+# #         'SCOPE': [
+# #             'profile',
+# #             'email',
+# #         ],
+# #         'AUTH_PARAMS': {
+# #             'access_type': 'online',
+# #         },
+# #         'OAUTH_PKCE_ENABLED': True,
+# #     }
+# # }
+
+# # Keep your existing login settings
+# LOGIN_REDIRECT_URL = '/'
+# # LOGOUT_REDIRECT_URL = '/accounts/login/'
+# # LOGIN_URL = '/accounts/login/'
+
+
+# # Social Account Providers
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         'SCOPE': [
+#             'profile',
+#             'email',
+#         ],
+#         'AUTH_PARAMS': {
+#             'access_type': 'online',
+#         },
+#         'APP': {
+#             'client_id': '536448435529-9tnobihagtc2cbdda3dmagf3bvjl-apps.googleusercontent.com',
+#             'secret': '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',
+#             'key': ''
+#         }
+#     }
+# }
+
+# # Required settings
+# ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+# SOCIALACCOUNT_LOGIN_ON_GET = True
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_USERNAME_REQUIRED = True
+# ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+
+# Allauth Configuration
+SITE_ID = 1
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Account settings
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_SESSION_REMEMBER = True
+
+# URL settings
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/login/'
-LOGIN_URL = '/accounts/login/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 
+# Social account settings
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
 
+# Remove the APP section from SOCIALACCOUNT_PROVIDERS
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    }
+}

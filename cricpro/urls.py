@@ -18,10 +18,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.views.generic import TemplateView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('capp.urls')),  # replace 'teams' with your app name
-    
-    
+    path('', include('capp.urls')),
 
+    # Keep allauth for social login if needed
+    path('accounts/', include('allauth.urls')),
+    path('robots.txt', TemplateView.as_view(
+        template_name="robots.txt",
+        content_type="text/plain"
+    )),
 ]
