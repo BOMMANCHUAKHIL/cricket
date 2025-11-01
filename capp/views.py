@@ -675,8 +675,8 @@ duplicate_positions = [dup['position'] for dup in duplicates]
 
 conflicting_members = Member.objects.filter(position__in=duplicate_positions).order_by('position')
 
-for m in conflicting_members:
-    print(f"{m.name} (Position: {m.position})")
+# for m in conflicting_members:
+#     print(f"{m.name} (Position: {m.position})")
 
 
 from django.contrib.auth.forms import UserCreationForm
