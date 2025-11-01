@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'django.contrib.sites',
-    "capp",
+    # "capp",
     'widget_tweaks',
     'mathfilters',
     'allauth',
