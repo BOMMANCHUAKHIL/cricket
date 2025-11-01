@@ -1,0 +1,480 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Live Matches - Team Manager{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 text-primary fw-bold">
+                    <i class="bi bi-broadcast me-2"></i>Live Matches Dashboard
+                </h1>
+                <a href="{% url 'start_match' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle me-1"></i>Start New Match
+                </a>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" id="userSearch" class="form-control form-control-lg" 
+                                       placeholder="Search users by username...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-info text-white">
+                                    <i class="bi bi-filter"></i>
+                                </span>
+                                <select class="form-select form-select-lg" id="userFilter">
+                                    <option value="all">All Users</option>
+                                    {% for user_data in matches_by_user %}
+                                    <option value="user-{{ user_data.user.username }}">{{ user_data.user.username|upper }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-warning text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">{{ total_live_matches }}</h4>
+                            <small>LIVE MATCHES</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">{{ total_upcoming_matches }}</h4>
+                            <small>UPCOMING MATCHES</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">{{ total_completed_matches }}</h4>
+                            <small>COMPLETED MATCHES</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group matches by user -->
+            {% if matches_by_user %}
+                {% for user_data in matches_by_user %}
+                <!-- User Section -->
+                <div class="card shadow-lg mb-4 border-0 user-section" id="user-{{ user_data.user.username }}" data-username="{{ user_data.user.username|lower }}">
+                    <div class="card-header bg-gradient-primary text-white py-3 user-header" 
+                         data-bs-toggle="collapse" 
+                         data-bs-target="#userContent-{{ user_data.user.username }}" 
+                         aria-expanded="false"
+                         style="cursor: pointer;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-chevron-down me-3 transition-icon"></i>
+                                <h4 class="mb-0 fw-bold">
+                                    <i class="bi bi-person-badge me-2"></i>{{ user_data.user.username|upper }}'S MATCHES
+                                </h4>
+                            </div>
+                            <div class="text-end">
+                                {% if user_data.live_matches %}
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                    <i class="bi bi-broadcast me-1"></i>{{ user_data.live_matches|length }} LIVE
+                                </span>
+                                {% endif %}
+                                <span class="badge bg-info text-white fs-6 px-3 py-2 ms-2">
+                                    <i class="bi bi-clock me-1"></i>{{ user_data.upcoming_matches|length }} UPCOMING
+                                </span>
+                                <span class="badge bg-success text-white fs-6 px-3 py-2 ms-2">
+                                    <i class="bi bi-check-circle me-1"></i>{{ user_data.completed_matches|length }} COMPLETED
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Collapsible Content - Initially show only live matches -->
+                    <div class="collapse" id="userContent-{{ user_data.user.username }}">
+                        <div class="card-body bg-light">
+
+                            <!-- Live Matches for this user -->
+                            {% if user_data.live_matches %}
+                            <div class="mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-warning rounded p-2 me-3">
+                                        <i class="bi bi-broadcast-pin text-white fs-4"></i>
+                                    </div>
+                                    <h4 class="text-warning fw-bold mb-0">LIVE MATCHES</h4>
+                                    <span class="badge bg-danger ms-3 fs-6 pulse">{{ user_data.live_matches|length }} ACTIVE</span>
+                                </div>
+                                <div class="row">
+                                    {% for match in user_data.live_matches %}
+                                    <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                        <div class="card h-100 border-warning border-3 shadow-sm match-card">
+                                            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center py-2">
+                                                <small class="fw-bold">{{ match.tournament.name|default:"FRIENDLY MATCH" }}</small>
+                                                <span class="badge bg-danger fs-7 pulse">LIVE</span>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title text-dark fw-bold">{{ match.team1.name }} vs {{ match.team2.name }}</h5>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-dark">{{ match.total_overs }} OVERS MATCH</span>
+                                                </div>
+                                                <div class="match-details">
+                                                    <p class="mb-1"><strong class="text-primary">Innings:</strong> {{ match.current_innings }}</p>
+                                                    <p class="mb-1"><strong class="text-primary">Started:</strong> {{ match.start_time|timesince }} ago</p>
+                                                    {% if match.team1_score or match.team2_score %}
+                                                    <p class="mb-0"><strong class="text-primary">Score:</strong> 
+                                                        <span class="fw-bold text-success">{{ match.team1_score }}/{{ match.team2_score }}</span>
+                                                    </p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="card-footer bg-transparent py-3">
+                                                <div class="d-grid gap-2">
+                                                    <a href="{% url 'record_ball' match.id %}" class="btn btn-warning btn-lg fw-bold">
+                                                        <i class="bi bi-pencil-square me-2"></i>RECORD BALL
+                                                    </a>
+                                                    <div class="btn-group w-100" role="group">
+                                                        <a href="{% url 'scorecard' match.id %}" class="btn btn-outline-primary">
+                                                            <i class="bi bi-eye me-1"></i>SCORECARD
+                                                        </a>
+                                                        <a href="{% url 'leaderboard' match.id %}" class="btn btn-outline-info">
+                                                            <i class="bi bi-graph-up me-1"></i>STATS
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Show other sections only when user section is expanded -->
+                            <div class="additional-sections">
+
+                                <!-- Upcoming Matches for this user -->
+                                {% if user_data.upcoming_matches %}
+                                <div class="mb-5">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-info rounded p-2 me-3">
+                                            <i class="bi bi-clock text-white fs-4"></i>
+                                        </div>
+                                        <h4 class="text-info fw-bold mb-0">UPCOMING MATCHES</h4>
+                                        <span class="badge bg-dark ms-3 fs-6">{{ user_data.upcoming_matches|length }} SCHEDULED</span>
+                                    </div>
+                                    <div class="row">
+                                        {% for match in user_data.upcoming_matches %}
+                                        <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                            <div class="card h-100 border-info border-3 shadow-sm match-card">
+                                                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-2">
+                                                    <small class="fw-bold">{{ match.tournament.name|default:"FRIENDLY MATCH" }}</small>
+                                                    <span class="badge bg-dark fs-7">UPCOMING</span>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h5 class="card-title text-dark fw-bold">{{ match.team1.name }} vs {{ match.team2.name }}</h5>
+                                                    <div class="mb-2">
+                                                        <span class="badge bg-secondary">{{ match.total_overs }} OVERS MATCH</span>
+                                                    </div>
+                                                    <div class="match-details">
+                                                        <p class="mb-0"><strong class="text-primary">Created:</strong> {{ match.created_at|timesince }} ago</p>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer bg-transparent py-3">
+                                                    <div class="d-grid">
+                                                        <a href="{% url 'record_ball' match.id %}" class="btn btn-info btn-lg fw-bold text-white">
+                                                            <i class="bi bi-play-circle me-2"></i>START MATCH
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Completed Matches for this user -->
+                                {% if user_data.completed_matches %}
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success rounded p-2 me-3">
+                                            <i class="bi bi-check-circle text-white fs-4"></i>
+                                        </div>
+                                        <h4 class="text-success fw-bold mb-0">COMPLETED MATCHES</h4>
+                                        <span class="badge bg-dark ms-3 fs-6">{{ user_data.completed_matches|length }} FINISHED</span>
+                                    </div>
+                                    <div class="row">
+                                        {% for match in user_data.completed_matches %}
+                                        <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                            <div class="card h-100 border-success border-3 shadow-sm match-card">
+                                                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-2">
+                                                    <small class="fw-bold">{{ match.tournament.name|default:"FRIENDLY MATCH" }}</small>
+                                                    <span class="badge bg-dark fs-7">COMPLETED</span>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h5 class="card-title text-dark fw-bold">{{ match.team1.name }} vs {{ match.team2.name }}</h5>
+                                                    <div class="mb-2">
+                                                        <span class="badge bg-secondary">{{ match.total_overs }} OVERS MATCH</span>
+                                                    </div>
+                                                    <div class="match-details">
+                                                        <p class="mb-1"><strong class="text-primary">Final Score:</strong></p>
+                                                        <p class="mb-2 fs-5 fw-bold text-success">
+                                                            {{ match.team1_score }} - {{ match.team2_score }}
+                                                        </p>
+                                                        <p class="mb-0">
+                                                            {% if match.winner %}
+                                                            <strong class="text-primary">Winner:</strong> 
+                                                            <span class="badge bg-success fs-6">{{ match.winner.name }}</span>
+                                                            {% else %}
+                                                            <strong class="text-primary">Result:</strong> 
+                                                            <span class="badge bg-secondary fs-6">DRAW</span>
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer bg-transparent py-3">
+                                                    <div class="btn-group w-100" role="group">
+                                                        <a href="{% url 'scorecard' match.id %}" class="btn btn-outline-primary btn-lg">
+                                                            <i class="bi bi-eye me-1"></i>SCORECARD
+                                                        </a>
+                                                        <a href="{% url 'leaderboard' match.id %}" class="btn btn-outline-info btn-lg">
+                                                            <i class="bi bi-graph-up me-1"></i>STATS
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+            {% else %}
+            <!-- No matches found -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-emoji-frown display-1 text-muted"></i>
+                    </div>
+                    <h3 class="text-muted fw-bold mb-3">No Matches Found</h3>
+                    <p class="text-muted fs-5 mb-4">Start your first match to see it here!</p>
+                    <a href="{% url 'start_match' %}" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-plus-circle me-2"></i>Start Your First Match
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<style>
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { 
+        transform: scale(1);
+        opacity: 1; 
+    }
+    50% { 
+        transform: scale(1.05);
+        opacity: 0.8; 
+    }
+    100% { 
+        transform: scale(1);
+        opacity: 1; 
+    }
+}
+
+.match-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.match-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.user-header:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+}
+
+.transition-icon {
+    transition: transform 0.3s ease;
+}
+
+.user-header[aria-expanded="true"] .transition-icon {
+    transform: rotate(180deg);
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.match-details {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.fs-7 {
+    font-size: 0.75rem !important;
+}
+
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.user-section {
+    transition: all 0.3s ease;
+}
+
+.user-section.hidden {
+    display: none !important;
+}
+
+/* Color enhancements */
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.border-warning {
+    border-color: #ffc107 !important;
+}
+
+.text-info {
+    color: #17a2b8 !important;
+}
+
+.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.border-info {
+    border-color: #17a2b8 !important;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.border-success {
+    border-color: #28a745 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const userSearch = document.getElementById('userSearch');
+    const userFilter = document.getElementById('userFilter');
+    const clearSearch = document.getElementById('clearSearch');
+    const userSections = document.querySelectorAll('.user-section');
+
+    // Search function
+    function filterUsers() {
+        const searchTerm = userSearch.value.toLowerCase();
+        const filterValue = userFilter.value;
+        
+        userSections.forEach(section => {
+            const username = section.getAttribute('data-username');
+            const matchesSearch = username.includes(searchTerm);
+            const matchesFilter = filterValue === 'all' || section.id === filterValue;
+            
+            if (matchesSearch && matchesFilter) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+    }
+
+    // Event listeners
+    userSearch.addEventListener('input', filterUsers);
+    userFilter.addEventListener('change', filterUsers);
+    
+    clearSearch.addEventListener('click', function() {
+        userSearch.value = '';
+        filterUsers();
+    });
+
+    // Auto-expand sections with live matches
+    userSections.forEach(section => {
+        const hasLiveMatches = section.querySelector('.bg-warning'); // Check if has live matches badge
+        if (hasLiveMatches) {
+            const collapseId = section.querySelector('.user-header').getAttribute('data-bs-target');
+            const collapseElement = document.querySelector(collapseId);
+            // Show only live matches initially (collapse stays closed but shows live matches)
+        }
+    });
+
+    // Show additional sections when user section is expanded
+    document.querySelectorAll('.user-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const target = this.getAttribute('data-bs-target');
+            const collapseElement = document.querySelector(target);
+            
+            // Bootstrap collapse event
+            collapseElement.addEventListener('show.bs.collapse', function() {
+                // Additional sections are already in the template, they'll show when expanded
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

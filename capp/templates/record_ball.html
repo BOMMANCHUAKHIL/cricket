@@ -756,8 +756,10 @@
 
 
 <!-- Sidebar Column -->
+
 <div class="col-lg-4">
     <!-- Team Selection Card -->
+    {% if is_match_owner %}
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -786,7 +788,7 @@
                     <div class="form-control bg-light d-flex align-items-center">
                         <i class="fas fa-check-circle text-success me-2"></i>
                         <strong>{{ batting_team.name }}</strong>
-                        <span class="badge bg-primary ms-auto">{{ innings.current.runs }}/{{ innings.current.wickets }}</span>
+                        <!--<span class="badge bg-primary ms-auto">{{ innings.current.runs }}/{{ innings.current.wickets }}</span>-->
                     </div>
                     {% else %}
                     <select name="batting_team" class="form-select" {% if is_second_innings %}disabled{% endif %}>
@@ -811,7 +813,7 @@
                     <div class="form-control bg-light d-flex align-items-center">
                         <i class="fas fa-check-circle text-success me-2"></i>
                         <strong>{{ bowling_team.name }}</strong>
-                        <span class="badge bg-danger ms-auto">{{ innings.current.runs }}/{{ innings.current.wickets }}</span>
+                        <!--<span class="badge bg-danger ms-auto">{{ innings.current.runs }}/{{ innings.current.wickets }}</span>-->
                     </div>
                     {% else %}
                     <select name="bowling_team" class="form-select" {% if is_second_innings %}disabled{% endif %}>
@@ -853,10 +855,11 @@
             </form>
         </div>
     </div>
+    {% endif %}
 
 
           <!-- Ball Entry Form -->
-{% if not match.completed and not second_innings_won %}
+{% if not match.completed and not second_innings_won and match.user == request.user %}
 <div class="ball-form-card mt-4">
     <div class="card-header ball-form-header">
         <h5 class="mb-0 text-white"><i class="fas fa-cricket me-2"></i> Record Ball Event</h5>

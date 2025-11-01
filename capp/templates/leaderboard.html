@@ -36,6 +36,12 @@
     background-color: #fff3cd !important;
     border-left: 4px solid #ffc107;
   }
+  .leader-card {
+  background-color: #fdfdfd;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
 </style>
 
 <div class="container my-5">
@@ -99,7 +105,8 @@
               <span class="text-muted small">
                 runs: {{ stats.runs }},
                 wickets: {{ stats.wickets }},
-                balls: {{ stats.balls }}
+                balls: {{ stats.balls }},
+                econ: {{ stats.economy }}.
               </span>
             </li>
           {% empty %}
@@ -108,6 +115,42 @@
         </ul>
       </div>
     </div>
+
+
+
+<div class="col-md-6">
+  <div class="leader-card shadow p-3 mb-4 bg-white rounded">
+    <h4 class="text-danger mb-3">
+      <i class="bi bi-glove"></i> Top Fielders (Catches)
+    </h4>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered text-center align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width: 10%;">S.NO</th>
+            <th>Fielder</th>
+            <th style="width: 25%;">Catches</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for stat in fielder_stats %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ stat.fielder|default:"None" }}</td>
+            <td>{{ stat.total_catches }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="text-muted">No catches recorded.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
+</div>
+
 {% endblock %}

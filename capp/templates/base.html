@@ -7,9 +7,10 @@
   <title>{% block title %}Team Manager | Cricket Teams and Matches App{% endblock %}</title>
   <meta name="description" content="Manage cricket teams, players, and match scores with this powerful Django web app.">
   <meta name="keywords" content="SrihariCricket,Team Manager, Cricket Team Manager, Match Score App, Django Cricket App, Cricket Match Manager">
-    <link rel="icon" type="image/png" href="{% static 'capp/images/1.jpg' %}">
+    <!--<link rel="icon" type="image/png" href="{% static 'capp/images/1.jpg' %}">-->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%236c5ce7'/><circle cx='25' cy='40' r='8' fill='white'/><rect x='21' y='48' width='8' height='20' fill='white'/><circle cx='50' cy='40' r='8' fill='white'/><rect x='46' y='48' width='8' height='20' fill='white'/><circle cx='75' cy='40' r='8' fill='white'/><rect x='71' y='48' width='8' height='20' fill='white'/><circle cx='50' cy='75' r='6' fill='%23fd79a8'/></svg>">
   <link rel="canonical" href="https://srihari453.pythonanywhere.com/" />
-  <link rel="shortcut icon" href="{% static 'capp/images/1.jpg' %}">
+  <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='white'/><!-- Crossed Cricket Bats --><path d='M20,30 L80,70' stroke='%23d4af37' stroke-width='8' stroke-linecap='round'/><path d='M80,30 L20,70' stroke='%23d4af37' stroke-width='8' stroke-linecap='round'/><!-- SPL Text in Blue --><text x='50' y='52' font-family='Arial, sans-serif' font-size='36' font-weight='bold' text-anchor='middle' fill='%230066cc'>SPL</text><!-- 3 Wickets at Bottom --><rect x='42' y='75' width='3' height='15' fill='%230066cc'/><rect x='48' y='75' width='3' height='15' fill='%230066cc'/><rect x='54' y='75' width='3' height='15' fill='%230066cc'/><!-- Red Cricket Ball --><circle cx='50' cy='85' r='5' fill='%23cc0000'/></svg>">
   <!-- ✅ Google Site Verification -->
   <meta name="google-site-verification" content="UmybHS8l4yeKfWOY_ZASjfK47mAgjma_dK5ktfim688">
 
@@ -45,6 +46,30 @@
       font-weight: 800;
       font-size: 1.5rem;
       letter-spacing: 0.05em;
+    }
+    /* Live indicator pulse animation */
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    /* Live match card hover effects */
+    .card.border-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    /* Active tournament card effects */
+    .card.border-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        transition: all 0.3s ease;
     }
 
     .nav-link {
@@ -144,44 +169,80 @@
             </a>
           </li>
           <li class="nav-item mx-1">
-            <a class="nav-link" href="{% url 'reorder_members' %}">
-              <i class="bi bi-arrow-down-up me-1"></i> Reorder Members
-            </a>
-          </li>
-          <!-- 🏏 Cricket Tracker Dropdown -->
-            <li class="nav-item dropdown mx-1">
-              <a class="nav-link dropdown-toggle" href="#" id="cricketDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-trophy me-1"></i> Cricket Tracker
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="cricketDropdown">
-                <li>
-                  <a class="dropdown-item" href="{% url 'start_match' %}">
-                    <i class="bi bi-pencil-square me-1"></i> Start Match
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="{% url 'tournament' %}">
-                    <i class="bi bi-trophy me-1"></i> Tournament
-                  </a>
-                </li>
-              </ul>
-            </li>
-             <!-- Coin Flip Link -->
-          <li class="nav-item mx-1">
             <a class="nav-link" href="{% url 'coin_flip' %}">
               <i class="bi bi-coin me-1"></i> Coin Flip
             </a>
           </li>
 
 
+            <!-- 🏏 Live Matches Dropdown -->
+          <li class="nav-item dropdown mx-1">
+            <a class="nav-link dropdown-toggle position-relative {% if live_matches %}text-warning{% endif %}"
+               href="#" id="liveMatchesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-broadcast me-1"></i> Live
+              {% if live_matches %}
+              <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle pulse">
+                <span class="visually-hidden">Live matches</span>
+              </span>
+              {% endif %}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="liveMatchesDropdown">
+              <!-- Live Matches Link -->
+              <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center {% if live_matches %}text-warning{% else %}text-muted{% endif %}"
+                   href="{% url 'live_matches' %}">
+                  <div>
+                    <i class="bi bi-broadcast me-2"></i>
+                    <span>Live Matches</span>
+                  </div>
+                  {% if live_matches %}
+                  <span class="badge bg-danger">{{ live_matches|length }}</span>
+                  {% endif %}
+                </a>
+              </li>
+
+              <!-- Live Tournaments Link -->
+              <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center {% if live_tournaments %}text-info{% else %}text-muted{% endif %}"
+                   href="{% url 'live_tournaments' %}">
+                  <div>
+                    <i class="bi bi-trophy me-2"></i>
+                    <span>Live Tournaments</span>
+                  </div>
+                  {% if live_tournaments %}
+                  <span class="badge bg-success">{{ live_tournaments|length }}</span>
+                  {% endif %}
+                </a>
+              </li>
+
+              <li><hr class="dropdown-divider"></li>
+
+              <!-- Quick Actions -->
+              <li>
+                <a class="dropdown-item" href="{% url 'start_match' %}">
+                  <i class="bi bi-plus-circle me-2"></i>Start New Match
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'tournament' %}">
+                  <i class="bi bi-trophy me-2"></i>Create Tournament
+                </a>
+              </li>
+            </ul>
+          </li>
+
+
+
+
         {% endif %}
       </ul>
 
-      <!-- 🔐 Auth Links -->
+      <!-- 🔐 Auth Links - FIXED -->
       <ul class="navbar-nav ms-auto">
         {% if user.is_authenticated %}
           <li class="nav-item mx-1">
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            <!-- Use direct URL for logout -->
+            <form action="/accounts/logout/" method="post" style="display:inline;">
               {% csrf_token %}
               <button type="submit" class="nav-link btn btn-link text-warning p-0 m-0" style="text-decoration: none;">
                 <i class="bi bi-box-arrow-right me-1"></i> Logout
@@ -190,12 +251,14 @@
           </li>
         {% else %}
           <li class="nav-item mx-1">
-            <a class="nav-link" href="{% url 'login' %}">
+            <!-- Use direct URL for login -->
+            <a class="nav-link" href="/accounts/login/">
               <i class="bi bi-box-arrow-in-right me-1"></i> Login
             </a>
           </li>
           <li class="nav-item mx-1">
-            <a class="nav-link" href="{% url 'signup' %}">
+            <!-- Use direct URL for signup -->
+            <a class="nav-link" href="/accounts/signup/">
               <i class="bi bi-person-plus me-1"></i> Sign Up
             </a>
           </li>

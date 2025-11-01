@@ -3,6 +3,16 @@
 {% load widget_tweaks %}
 
 {% block content %}
+{% comment %}
+{% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% endcomment %}
 <div class="team-generator-container">
   <!-- Animated Gradient Header -->
   <header class="generator-header">
@@ -28,13 +38,14 @@
   <div class="form-glass-container">
     <form method="post" class="team-generator-form" id="teamGeneratorForm">
       {% csrf_token %}
-
+          <input type="hidden" name="update_captains" id="update_captains" value="0">
       <!-- Members Selection - Card Style -->
       <div class="form-card active">
         <div class="card-header">
           <i class="bi bi-person-lines-fill"></i>
           <h2>Select Team Members</h2>
           <span class="badge bg-primary">{{ form.members.field.queryset.count }} available</span>
+           <span class="badge bg-success ms-2" id="selectedCount">0 selected</span>
         </div>
         <div class="card-body">
           {% if form.members.errors %}
@@ -42,6 +53,33 @@
               {{ form.members.errors }}
             </div>
           {% endif %}
+
+
+          <!-- Search Bar -->
+            <div class="search-container mb-3">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text"
+                       class="form-control"
+                       id="memberSearch"
+                       placeholder="Search members by name..."
+                       aria-label="Search members">
+                <button type="button" class="btn btn-outline-secondary" id="clearSearch">
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Filter Badges -->
+            <div class="filter-badges mb-3" id="filterBadges">
+              <span class="badge filter-badge active" data-filter="all">All</span>
+              <span class="badge filter-badge" data-filter="captain">Captains</span>
+              <span class="badge filter-badge" data-filter="recent">Recently Used</span>
+              <span class="badge filter-badge" data-filter="selected">Selected</span>
+            </div>
+
 
           <!-- Captain Selection Toggle -->
           <div class="captain-toggle mb-3">
@@ -52,37 +90,56 @@
 
           <div class="members-grid" id="membersGrid">
             {% for member in form.members.field.queryset %}
-            <div class="member-checkbox-container">
+            <div class="member-checkbox-container"
+                data-member-name="{{ member.name|lower }}"
+               data-is-captain="{{ member.is_captain|yesno:'true,false' }}"
+               data-is-selected="{{ member.is_selected|yesno:'true,false' }}"
+               data-is-recent="{% if member.last_selected %}true{% else %}false{% endif %}">
               <!-- Member Checkbox -->
               <div class="member-checkbox">
                 <input type="checkbox" id="member_{{ member.id }}" name="members"
                        value="{{ member.id }}" class="member-checkbox-input"
-                       {% if member.id in form.members.value %}checked{% endif %}>
+                       {% if member.is_selected %}checked{% endif %}>
                 <label for="member_{{ member.id }}">
                   <div class="member-avatar">
                     <i class="bi bi-person-circle"></i>
+                    {% if member.is_selected %}
+                    <span class="recent-badge" title="Previously selected">
+                      <i class="bi bi-clock-history"></i>
+                    </span>
+                    {% endif %}
                   </div>
                   <span class="member-name">
                     {{ member.name }}
-                    {% if member.is_captain %}
-                      <span class="badge bg-warning ms-2">Captain</span>
-                    {% endif %}
+                    <!--{% if member.is_captain %}-->
+                    <!--  <span class="badge bg-warning ms-2">Captain</span>-->
+                    <!--{% endif %}-->
                   </span>
                 </label>
               </div>
 
               <!-- Captain Toggle (hidden by default) -->
               <div class="captain-toggle-option" style="display: none;">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox"
-                         id="captain_{{ member.id }}" name="captain_{{ member.id }}"
-                         {% if member.is_captain %}checked{% endif %}>
-                  <label class="form-check-label" for="captain_{{ member.id }}">Make Captain</label>
-                </div>
-              </div>
+    <div class="form-check form-switch">
+        <input class="form-check-input captain-toggle"
+               type="checkbox"
+               name="captain_{{ member.id }}"
+               id="captain_{{ member.id }}"
+               {% if member.is_captain %}checked{% endif %}>
+        <label class="form-check-label" for="captain_{{ member.id }}"></label>
+    </div>
+</div>
             </div>
             {% endfor %}
           </div>
+
+
+            <!-- Add No Results Message AFTER the members grid -->
+        <div class="no-results text-center py-4" id="noResults" style="display: none;">
+          <i class="bi bi-search display-4 text-muted mb-3"></i>
+          <p class="text-muted">No members found matching your search criteria.</p>
+        </div>
+
 
           <div class="select-actions">
             <button type="button" class="btn-select-all" id="selectAllBtn">
@@ -102,26 +159,42 @@
         <div class="card-header">
           <i class="bi bi-sliders"></i>
           <h2>Team Configuration</h2>
+  </div>
+  <div class="card-body">
+    <!-- Team Assignment Display -->
+    <div class="form-group">
+      <label>
+        <i class="bi bi-people-fill"></i>
+        Team Assignment
+        <small class="form-text text-muted">
+          Either select captains or manually specify number of teams
+        </small>
+      </label>
+
+      <div class="captains-teams-display" id="captainsTeamsDisplay">
+        <div class="empty-state">
+          <i class="bi bi-info-circle"></i>
+          <span>Select members and mark them as captains using the "Make Captain" toggle,or specify teams below</span>
         </div>
-        <div class="card-body">
-          <!-- Number of Teams -->
-          <div class="form-group">
-            <label for="{{ form.num_teams.id_for_label }}">
-              <i class="bi bi-grid-3x3-gap-fill"></i>
-              {{ form.num_teams.label }}
-            </label>
-            {% if form.num_teams.errors %}
-              <div class="alert alert-danger">
-                {{ form.num_teams.errors }}
-              </div>
-            {% endif %}
-            <div class="range-slider">
-              <input type="range" min="1" max="10" value="{{ form.num_teams.value|default:'2' }}"
-                     class="form-range" id="{{ form.num_teams.id_for_label }}"
-                     name="{{ form.num_teams.name }}">
-              <output class="bubble">{{ form.num_teams.value|default:'2' }}</output>
-            </div>
-          </div>
+      </div>
+
+      <!-- Team Count Input (visible when no captains) -->
+      <div class="team-count-input mt-3" id="teamCountInput">
+        <label for="id_num_teams_manual">
+          <i class="bi bi-123"></i>
+          Number of Teams
+          <small class="form-text text-muted">
+            Specify how many teams to create (when no captains selected)
+          </small>
+        </label>
+        <input type="number" class="form-control" min="1" max="10"
+               value="2" name="num_teams_manual" id="id_num_teams_manual">
+      </div>
+
+      <!-- Hidden input for num_teams -->
+      <input type="hidden" id="id_num_teams" name="num_teams" value="2">
+    </div>
+
 
           <!-- Shuffle Intensity -->
           <div class="form-group">
@@ -144,8 +217,15 @@
                 </div>
                 <span>High</span>
               </div>
-              {{ form.max_shuffle }}
-            </div>
+    <input type="range" class="form-range" min="1" max="5" step="1"
+           value="{{ form.max_shuffle.value|default:3 }}"
+           name="max_shuffle_visual" id="max_shuffle_visual">
+</div>
+
+ <!-- Numeric Input (1-100) -->
+        <input type="number" class="form-control" min="1" max="100" step="1"
+               value="{{ form.max_shuffle.value|default:2 }}"
+               name="max_shuffle" id="max_shuffle_value">
           </div>
         </div>
       </div>
@@ -186,6 +266,51 @@
     --glass-border: rgba(255, 255, 255, 0.2);
   }
 
+      /* Add to your CSS */
+    .recent-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #00b894;
+      color: white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+
+    .member-avatar {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.75rem;
+      font-size: 1.25rem;
+    }
+    .team-count-input {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #6c5ce7;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.team-count-input label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.team-count-input .form-control {
+    max-width: 200px;
+}
+
   .team-generator-container {
     position: relative;
     overflow: hidden;
@@ -204,6 +329,300 @@
     margin-bottom: -3rem;
     z-index: 1;
   }
+
+  /* Search and Filter Styles */
+    .search-container {
+      position: relative;
+    }
+
+    .search-container .input-group-text {
+      background: var(--light);
+      border: 1px solid #dee2e6;
+      border-right: none;
+    }
+
+    .search-container .form-control {
+      border-left: none;
+      padding-left: 0;
+    }
+
+    .search-container .form-control:focus {
+      border-color: #dee2e6;
+      box-shadow: none;
+    }
+
+    .filter-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-badge {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      opacity: 0.6;
+    }
+
+    .filter-badge.active {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    .filter-badge:hover {
+      opacity: 0.8;
+    }
+
+    .filter-badge[data-filter="all"] {
+      background: var(--primary);
+    }
+
+    .filter-badge[data-filter="captain"] {
+      background: var(--accent);
+    }
+
+    .filter-badge[data-filter="recent"] {
+      background: var(--success);
+    }
+
+    .filter-badge[data-filter="selected"] {
+      background: #17a2b8;
+    }
+
+    .no-results {
+      display: none;
+    }
+
+    .member-checkbox-container {
+      transition: all 0.3s ease;
+    }
+
+    .member-checkbox-container.hidden {
+      display: none !important;
+    }
+
+    /* Animation for search results */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .member-checkbox-container:not(.hidden) {
+      animation: fadeIn 0.3s ease;
+    }
+
+/* Enhanced Search Styles */
+.search-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-container .input-group {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.search-container .input-group:focus-within {
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.2);
+  transform: translateY(-2px);
+}
+
+.search-container .input-group-text {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+}
+
+.search-container .form-control {
+  border: none;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background: white;
+  border-radius: 0 !important;
+}
+
+.search-container .form-control::placeholder {
+  color: #6c757d;
+  opacity: 0.7;
+}
+
+.search-container .form-control:focus {
+  border-color: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.search-container .btn-outline-secondary {
+  border: none;
+  background: white;
+  color: #6c757d;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.search-container .btn-outline-secondary:hover {
+  background: #ff6b6b;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Enhanced Filter Badges */
+.filter-badges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.filter-badge {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+  padding: 0.625rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 25px;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.filter-badge:hover::before {
+  left: 100%;
+}
+
+.filter-badge.active {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.filter-badge:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Filter badge colors */
+.filter-badge[data-filter="all"] {
+  background: var(--primary);
+  color: white;
+}
+
+.filter-badge[data-filter="captain"] {
+  background: var(--accent);
+  color: white;
+}
+
+.filter-badge[data-filter="recent"] {
+  background: var(--success);
+  color: white;
+}
+
+.filter-badge[data-filter="selected"] {
+  background: #17a2b8;
+  color: white;
+}
+
+/* Clear search button animation */
+#clearSearch {
+  transition: all 0.2s ease;
+}
+
+#clearSearch:hover {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filter-badges {
+    gap: 0.5rem;
+  }
+
+  .filter-badge {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .search-container .input-group {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Animation for search interactions */
+@keyframes searchFocus {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.search-container:focus-within {
+  animation: searchFocus 0.3s ease;
+}
+
+/* Loading state for search */
+.search-loading .input-group-text::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-left: 0.5rem;
+}
+
+/* Badge pulse animation for active filters */
+.filter-badge.active::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50px;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: pulseBadge 2s infinite;
+}
+
+@keyframes pulseBadge {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
   .particles-container {
     position: absolute;
@@ -229,6 +648,49 @@
     left: 10%;
     animation-delay: 0s;
   }
+  /* Add this to your existing CSS */
+.form-range {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    background: var(--light);
+    border-radius: 10px;
+    outline: none;
+    margin-top: 10px;
+}
+
+/* Add this to your existing CSS */
+.form-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 0;
+    height: 0;
+}
+
+.form-range::-moz-range-thumb {
+    width: 0;
+    height: 0;
+}
+.intensity-bars {
+    display: flex;
+    gap: 5px;
+    flex: 1;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.intensity-bar {
+    height: 12px;
+    flex: 1;
+    background: var(--light);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.intensity-bar.active {
+    background: var(--accent);
+    transform: scaleY(1.2);
+}
 
   .particle:nth-child(2) {
     width: 30px;
@@ -461,20 +923,31 @@
     outline: none;
   }
 
-  .form-range::-webkit-slider-thumb {
+ /* This part of your CSS makes the slider thumb invisible */
+.form-range::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 25px;
-    height: 25px;
-    background: var(--primary);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
+    width: 0;
+    height: 0;
+}
 
-  .form-range::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
-  }
+.form-range::-moz-range-thumb {
+    width: 0;
+    height: 0;
+}
+/* Add to your CSS */
+#selectedCount {
+    transition: all 0.3s ease;
+}
+
+#selectedCount.pulse {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
 
   .bubble {
     position: absolute;
@@ -514,6 +987,24 @@
     cursor: pointer;
     transition: all 0.2s ease;
   }
+
+  .team-count-input {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #6c5ce7;
+    margin-top: 1rem;
+}
+
+.team-count-input label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.team-count-input .form-control {
+    max-width: 200px;
+}
 
   .intensity-bar.active,
   .intensity-bar:hover {
@@ -632,123 +1123,451 @@
     .form-card .card-body {
       padding: 1rem;
     }
+    /* Add these styles to your existing CSS */
 
     .generate-btn {
       width: 100%;
     }
   }
 </style>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Get all necessary elements
-    const form = document.getElementById('teamGeneratorForm');
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    const clearAllBtn = document.getElementById('clearAllBtn');
-    const memberCheckboxes = document.querySelectorAll('.member-checkbox-input');
-    const generateBtn = document.getElementById('generateBtn');
-    const membersGrid = document.getElementById('membersGrid');
-    const rangeInput = document.querySelector(".form-range");
-    const outputBubble = document.querySelector(".bubble");
-    const intensityBars = document.querySelectorAll(".intensity-bar");
-    const maxShuffleInput = document.querySelector("select[name='max_shuffle'], input[name='max_shuffle']");
 
-    // Load saved selections from localStorage
+
+
+<style>
+  .captains-teams-display {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .captain-team-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-left: 4px solid #6c5ce7;
+  }
+
+  .team-badge {
+    width: 28px;
+    height: 28px;
+    background: #6c5ce7;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .captain-name {
+    font-weight: 500;
+    flex-grow: 1;
+  }
+
+  .team-label {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .empty-state {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #6c757d;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.7);
+    border-radius: 6px;
+  }
+
+  .empty-state i {
+    color: #6c5ce7;
+    font-size: 1.25rem;
+  }
+
+  .summary-count {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(108, 92, 231, 0.1);
+    border-radius: 6px;
+    text-align: center;
+  }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const visualSlider = document.getElementById("max_shuffle_visual");
+    const numberInput = document.getElementById("max_shuffle_value");
+
+    // Map slider (1-5) to number (1-100)
+    visualSlider.addEventListener("input", function() {
+        const sliderValue = parseInt(this.value);
+        let mappedValue;
+
+        // Direct mapping for 1-5
+        if (sliderValue <= 5) {
+            mappedValue = sliderValue;
+        }
+        // Scaled mapping (though slider only goes to 5)
+        else {
+            mappedValue = Math.floor((sliderValue / 5) * 100);
+        }
+
+        numberInput.value = mappedValue;
+    });
+
+    // Map number input to slider and update bars
+    numberInput.addEventListener("input", function() {
+        const numValue = parseInt(this.value) || 0; // Default to 0 if empty
+
+        // Direct mapping for 0-5
+        if (numValue <= 5) {
+            visualSlider.value = numValue;
+        }
+        // Scaled mapping for 6-100
+        else if (numValue <= 100) {
+            visualSlider.value = Math.ceil((numValue / 100) * 5);
+        }
+        // Numbers >100 keep slider at max (5)
+        else {
+            visualSlider.value = 5;
+        }
+
+        // Update active bars based on slider value (1-5)
+        const currentSliderValue = parseInt(visualSlider.value);
+        document.querySelectorAll(".intensity-bar").forEach((bar, index) => {
+            bar.classList.toggle("active", (index + 1) <= currentSliderValue);
+        });
+    });
+
+    // Initialize on load
+    document.addEventListener("DOMContentLoaded", function() {
+        // Trigger initial update
+        numberInput.dispatchEvent(new Event("input"));
+    });
+    const elements = {
+        form: document.getElementById('teamGeneratorForm'),
+        selectAllBtn: document.getElementById('selectAllBtn'),
+        clearAllBtn: document.getElementById('clearAllBtn'),
+        memberCheckboxes: document.querySelectorAll('.member-checkbox-input'),
+        generateBtn: document.getElementById('generateBtn'),
+        membersGrid: document.getElementById('membersGrid'),
+        rangeInput: document.querySelector(".form-range"),
+        outputBubble: document.querySelector(".bubble"),
+        intensityBars: document.querySelectorAll(".intensity-bar"),
+        maxShuffleInput: document.querySelector("select[name='max_shuffle'], input[name='max_shuffle']"),
+        toggleCaptainsBtn: document.getElementById('toggleCaptainsBtn'),
+        captainOptions: document.querySelectorAll('.captain-toggle-option'),
+        captainsDisplay: document.getElementById('captainsTeamsDisplay')
+    };
+
+    // State
+    let captainsVisible = false;
+
+    // Utility Functions
+    const debounce = (func, delay) => {
+        let timeout;
+        return function() {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), delay);
+        };
+    };
+
+    // Core Functions
+    function updateTeamsDisplay() {
+        if (!elements.captainsDisplay) return;
+
+        const selectedMemberIds = new Set(
+            Array.from(document.querySelectorAll('.member-checkbox-input:checked'))
+                .map(checkbox => checkbox.value)
+        );
+
+        const selectedCaptains = Array.from(
+            document.querySelectorAll('.captain-toggle-option input[type="checkbox"]:checked')
+        )
+        .filter(checkbox => selectedMemberIds.has(
+            checkbox.closest('.member-checkbox-container')
+                .querySelector('.member-checkbox-input').value
+        ))
+        .map(checkbox => {
+            const container = checkbox.closest('.member-checkbox-container');
+            return {
+                id: checkbox.id.replace('captain_', ''),
+                name: container.querySelector('.member-name').textContent.trim()
+            };
+        });
+
+        document.getElementById('id_num_teams').value = selectedCaptains.length || 1;
+        updateTeamCountInput();
+        if (selectedCaptains.length === 0) {
+            elements.captainsDisplay.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-info-circle"></i>
+                    <span>No captains selected. Specify number of teams below or select captains.</span>
+                </div>`;
+        } else {
+            elements.captainsDisplay.innerHTML = selectedCaptains.map((captain, index) => `
+                <div class="captain-team-item">
+                    <div class="team-badge">${index + 1}</div>
+                    <div class="captain-name">${captain.name}</div>
+                    <div class="team-label">Team ${index + 1}</div>
+                </div>`).join('');
+
+            elements.captainsDisplay.insertAdjacentHTML('beforeend', `
+                <div class="summary-count">
+                    <small>
+                        <i class="bi bi-people-fill"></i>
+                        ${selectedCaptains.length} team(s) will be created from selected captains
+                    </small>
+                </div>`);
+        }
+    }
+
+    function updateTeamCountInput() {
+    const captainsDisplay = document.getElementById('captainsTeamsDisplay');
+    const teamCountInput = document.getElementById('teamCountInput');
+    const hiddenNumTeams = document.getElementById('id_num_teams');
+    const manualNumTeams = document.getElementById('id_num_teams_manual');
+
+    // Check if we have any captains selected
+    const hasCaptains = document.querySelectorAll('.captain-toggle-option input[type="checkbox"]:checked').length > 0;
+
+    if (hasCaptains) {
+        // Hide manual team count input when captains are selected
+        teamCountInput.style.display = 'none';
+        // Use number of captains as team count
+        const captainCount = document.querySelectorAll('.captain-toggle-option input[type="checkbox"]:checked').length;
+        hiddenNumTeams.value = captainCount || 1;
+    } else {
+        // Show manual team count input when no captains
+        teamCountInput.style.display = 'block';
+        // Use manual input value
+        const manualValue = manualNumTeams.value || 2;
+        hiddenNumTeams.value = manualValue;
+        if (!manualNumTeams.value) {
+            manualNumTeams.value = 2;
+        }
+    }
+} // This closing brace was missing
+
+    function updateSelectionUI() {
+        document.querySelectorAll('.member-checkbox-input').forEach(checkbox => {
+            const container = checkbox.closest('.member-checkbox-container');
+            if (checkbox.checked) {
+                container.classList.add('persistent-selection');
+            } else {
+                container.classList.remove('persistent-selection');
+            }
+        });
+    }
+
+    // Initialize UI on load
+    updateSelectionUI();
+    // Update UI when checkboxes change
+
+    document.querySelectorAll('.member-checkbox-input').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectionUI);
+    });
+
+    function handleCaptainToggle(toggle) {
+        if (!elements.form.classList.contains('submitting')) {
+        // Update UI immediately
+        document.getElementById('update_captains').value = '1';
+        document.getElementById('teamGeneratorForm').submit();
+
+        const memberId = toggle.id.replace('captain_', '');
+        const memberLabel = document.querySelector(`label[for="member_${memberId}"]`);
+
+        if (toggle.checked) {
+            // Add badge to newly selected captain
+            if (memberLabel && !memberLabel.querySelector('.captain-badge')) {
+                memberLabel.insertAdjacentHTML('beforeend',
+                    '<span class="badge bg-warning ms-2 captain-badge">Captain</span>');
+            }
+        } else {
+            // Remove badge if unchecking
+            const badge = memberLabel?.querySelector('.captain-badge');
+            if (badge) badge.remove();
+        }
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        formData.append(toggle.name, toggle.checked ? 'on' : '');
+        formData.append('update_captains', '1');
+
+        // Send update to server
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (!response.ok) {
+                // Revert UI if update failed
+                toggle.checked = !toggle.checked;
+                if (toggle.checked) {
+                    memberLabel?.querySelector('.captain-badge')?.remove();
+                } else {
+                    if (memberLabel && !memberLabel.querySelector('.captain-badge')) {
+                        memberLabel.insertAdjacentHTML('beforeend',
+                            '<span class="badge bg-warning ms-2 captain-badge">Captain</span>');
+                    }
+                }
+            }
+            updateTeamsDisplay();
+        });
+    }
+    }
+
+    function updateCaptainUI(toggle) {
+        const memberId = toggle.id.replace('captain_', '');
+        const memberLabel = document.querySelector(`label[for="member_${memberId}"]`);
+
+        if (toggle.checked) {
+            if (memberLabel && !memberLabel.querySelector('.captain-badge')) {
+                memberLabel.insertAdjacentHTML('beforeend',
+                    '<span class="badge bg-warning ms-2 captain-badge">Captain</span>');
+            }
+        } else if (memberLabel) {
+            const badge = memberLabel.querySelector('.captain-badge');
+            if (badge) badge.remove();
+        }
+    }
+
     function loadSelectedMembers() {
         const savedSelections = localStorage.getItem('teamGeneratorSelectedMembers');
         if (savedSelections) {
             const selectedIds = JSON.parse(savedSelections);
-            memberCheckboxes.forEach(checkbox => {
+            elements.memberCheckboxes.forEach(checkbox => {
                 checkbox.checked = selectedIds.includes(checkbox.value);
             });
         }
     }
+    function handleRangeInputChange() {
+    const value = elements.rangeInput.value;
+    // Update the hidden input value
+    document.getElementById("max_shuffle_value").value = value;
 
-    // Save selections to localStorage
+    // Update active state on intensity bars
+    elements.intensityBars.forEach(bar => {
+        bar.classList.toggle("active", bar.getAttribute("data-value") === value);
+    });
+}
+
     function saveSelectedMembers() {
-        const selectedIds = Array.from(memberCheckboxes)
+        const selectedIds = Array.from(elements.memberCheckboxes)
             .filter(checkbox => checkbox.checked)
             .map(checkbox => checkbox.value);
         localStorage.setItem('teamGeneratorSelectedMembers', JSON.stringify(selectedIds));
     }
 
-    // Select All functionality
     function selectAllMembers() {
-        memberCheckboxes.forEach(checkbox => {
-            checkbox.checked = true;
-        });
+        elements.memberCheckboxes.forEach(checkbox => checkbox.checked = true);
         saveSelectedMembers();
+        updateTeamsDisplay();
     }
 
-    // Clear All functionality
     function clearAllMembers() {
-        memberCheckboxes.forEach(checkbox => {
-            checkbox.checked = false;
-        });
+        elements.memberCheckboxes.forEach(checkbox => checkbox.checked = false);
         saveSelectedMembers();
+        updateTeamsDisplay();
     }
 
-    // Update range slider bubble
     function updateRangeBubble() {
-        if (rangeInput && outputBubble) {
-            outputBubble.textContent = rangeInput.value;
+        if (elements.rangeInput && elements.outputBubble) {
+            elements.outputBubble.textContent = elements.rangeInput.value;
         }
     }
 
-    // Handle intensity bar selection
-    function handleIntensityBarClick(bar) {
-        const value = bar.getAttribute("data-value");
-        if (maxShuffleInput) {
-            maxShuffleInput.value = value;
-            document.querySelectorAll(".intensity-bar").forEach(b => b.classList.remove("active"));
+   function handleIntensityBarClick(bar) {
+    const value = bar.getAttribute("data-value");
+    // Update both the range input and hidden input
+    elements.rangeInput.value = value;
+    document.getElementById("max_shuffle_value").value = value;
+
+    // Update UI
+    document.querySelectorAll(".intensity-bar").forEach(b => b.classList.remove("active"));
+    bar.classList.add("active");
+}
+
+// Initialize the range input
+if (elements.rangeInput) {
+    // Set initial value from the hidden input
+    const initialValue = document.getElementById("max_shuffle_value").value;
+    elements.rangeInput.value = initialValue;
+
+    // Update bars to match initial state
+    elements.intensityBars.forEach(bar => {
+        if (bar.getAttribute("data-value") === initialValue) {
             bar.classList.add("active");
         }
+    });
+
+    // Add event listener
+    elements.rangeInput.addEventListener("input", handleRangeInputChange);
+}
+
+    function handleFormSubmit(e) {
+    // Mark form as submitting
+    elements.form.classList.add('submitting');
+
+    const atLeastOneChecked = Array.from(elements.memberCheckboxes).some(checkbox => checkbox.checked);
+    if (!atLeastOneChecked) {
+        e.preventDefault();
+        alert('Please select at least one member');
+        elements.form.classList.remove('submitting');
+        return;
     }
 
-    // Form submission handler
-    function handleFormSubmit(e) {
-        // Check if at least one member is selected
-        const atLeastOneChecked = Array.from(memberCheckboxes).some(checkbox => checkbox.checked);
-        if (!atLeastOneChecked) {
+    // Check if at least two captains are selected when captains are visible/used
+    const selectedCaptains = Array.from(document.querySelectorAll('.captain-toggle-option input[type="checkbox"]:checked'));
+    const hasCaptains = selectedCaptains.length > 0;
+
+    if (hasCaptains) {
+        // Count how many captains are actually selected as members
+        const selectedCaptainCount = selectedCaptains.filter(captainToggle => {
+            const memberCheckbox = captainToggle.closest('.member-checkbox-container')
+                .querySelector('.member-checkbox-input');
+            return memberCheckbox.checked;
+        }).length;
+
+        // Require at least 2 captains
+        if (selectedCaptainCount < 2) {
             e.preventDefault();
-            alert('Please select at least one member');
+            alert('Please select at least two captains from the selected members');
+            elements.form.classList.remove('submitting');
             return;
         }
-
-        // Show loading state
-        if (generateBtn) {
-            generateBtn.disabled = true;
-            generateBtn.querySelector(".btn-content").style.opacity = "0";
-            generateBtn.querySelector(".btn-loader").style.display = "block";
-        }
     }
 
-    // Initialize intensity bars
-    function initIntensityBars() {
-        if (intensityBars.length && maxShuffleInput) {
-            intensityBars.forEach(bar => {
-                bar.addEventListener("click", () => handleIntensityBarClick(bar));
-            });
+    // Reset the update_captains flag for form submission
+    document.getElementById('update_captains').value = '0';
 
-            // Initialize active bar from input value
-            const currentVal = maxShuffleInput.value;
-            intensityBars.forEach(bar => {
-                if (bar.getAttribute("data-value") === currentVal) {
-                    bar.classList.add("active");
-                }
-            });
-        }
+    if (elements.generateBtn) {
+        elements.generateBtn.disabled = true;
+        elements.generateBtn.querySelector(".btn-content").style.opacity = "0";
+        elements.generateBtn.querySelector(".btn-loader").style.display = "block";
     }
-
-    // Responsive grid adjustment
+}
     function adjustMemberGrid() {
         if (window.innerWidth < 768) {
-            membersGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(120px, 1fr))";
+            elements.membersGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(120px, 1fr))";
         } else {
-            membersGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(150px, 1fr))";
+            elements.membersGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(150px, 1fr))";
         }
     }
 
-    // Card animation on scroll
     function animateCardsOnScroll() {
         const cards = document.querySelectorAll(".form-card");
         cards.forEach((card, index) => {
@@ -762,7 +1581,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Initialize card animations
     function initCardAnimations() {
         const cards = document.querySelectorAll(".form-card");
         cards.forEach((card, index) => {
@@ -773,7 +1591,6 @@ document.addEventListener("DOMContentLoaded", function () {
         animateCardsOnScroll();
     }
 
-    // Initialize tooltips
     function initTooltips() {
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -781,106 +1598,241 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Event listeners
-    if (selectAllBtn) selectAllBtn.addEventListener("click", selectAllMembers);
-    if (clearAllBtn) clearAllBtn.addEventListener("click", clearAllMembers);
-    memberCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener("change", saveSelectedMembers);
-    });
-    if (rangeInput) rangeInput.addEventListener("input", updateRangeBubble);
-    if (form) form.addEventListener("submit", handleFormSubmit);
-    window.addEventListener("scroll", animateCardsOnScroll);
-    window.addEventListener("resize", adjustMemberGrid);
+    function toggleCaptainOptions() {
+        captainsVisible = !captainsVisible;
+        elements.captainOptions.forEach(option => {
+            option.style.display = captainsVisible ? 'block' : 'none';
+        });
 
-    // Initializations
-    loadSelectedMembers();
-    updateRangeBubble();
-    initIntensityBars();
-    initCardAnimations();
-    initTooltips();
-    adjustMemberGrid();
-});
-</script>
-</div>
-
-<style>
-  /* Add these new styles to your existing CSS */
-
-  .member-checkbox-container {
-    position: relative;
-    margin-bottom: 0.5rem;
-  }
-
-  .captain-toggle-option {
-    padding: 0.5rem;
-    background: rgba(255, 193, 7, 0.1);
-    border-radius: 0 0 8px 8px;
-    margin-top: -5px;
-    border-top: 1px dashed rgba(0,0,0,0.1);
-  }
-
-  .captain-toggle {
-    text-align: right;
-  }
-
-  .captain-toggle .btn {
-    transition: all 0.3s ease;
-  }
-
-  .captain-toggle .btn:hover {
-    background: rgba(255, 193, 7, 0.2);
-  }
-
-  /* Adjust member grid for new layout */
-  .members-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 0.5rem;
-  }
-
-  /* Make sure checkboxes stay visible */
-  .member-checkbox input[type="checkbox"]:checked + label {
-    z-index: 2;
-    position: relative;
-  }
-</style>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    // Existing JavaScript code remains the same
-
-    // Add these new functions for captain toggling
-    const toggleCaptainsBtn = document.getElementById('toggleCaptainsBtn');
-    const captainOptions = document.querySelectorAll('.captain-toggle-option');
-    let captainsVisible = false;
-
-    if (toggleCaptainsBtn) {
-        toggleCaptainsBtn.addEventListener('click', function() {
-            captainsVisible = !captainsVisible;
-
-            captainOptions.forEach(option => {
-                option.style.display = captainsVisible ? 'block' : 'none';
-            });
-
-            this.innerHTML = captainsVisible
+        if (elements.toggleCaptainsBtn) {
+            elements.toggleCaptainsBtn.innerHTML = captainsVisible
                 ? '<i class="bi bi-star-fill"></i> Hide Captain Options'
                 : '<i class="bi bi-star-fill"></i> Show Captain Options';
-
-            this.classList.toggle('active', captainsVisible);
-        });
+            elements.toggleCaptainsBtn.classList.toggle('active', captainsVisible);
+        }
     }
 
-    // Update form submission to handle captains
-    const form = document.getElementById('teamGeneratorForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // Existing validation code
 
-            // Add any additional captain validation if needed
-        });
+    // Add this function to update the selected count
+    function updateSelectedCount() {
+        const selectedCount = document.querySelectorAll('.member-checkbox-input:checked').length;
+        const totalCount = document.querySelectorAll('.member-checkbox-input').length;
+        document.getElementById('selectedCount').textContent = `${selectedCount} selected`;
+
+        // Optional: Add visual feedback when many members are selected
+        const selectedCountElement = document.getElementById('selectedCount');
+        if (selectedCount > 0) {
+            selectedCountElement.classList.add('bg-success');
+            selectedCountElement.classList.remove('bg-secondary');
+        } else {
+            selectedCountElement.classList.add('bg-secondary');
+            selectedCountElement.classList.remove('bg-success');
+        }
     }
 
-    // Keep all your existing JavaScript code
+    // Add this to your event listeners
+    document.querySelectorAll('.member-checkbox-input').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+
+    // Initialize the count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSelectedCount();
+    });
+
+
+
+    // Event Listeners
+    function setupEventListeners() {
+        document.addEventListener('change', debounce(function(e) {
+            if (e.target.matches('.member-checkbox-input, .captain-toggle-option input[type="checkbox"]')) {
+                if (e.target.matches('.member-checkbox-input')) {
+                    saveSelectedMembers();
+                }
+                updateTeamsDisplay();
+            }
+        }, 100));
+
+        if (elements.toggleCaptainsBtn) {
+            elements.toggleCaptainsBtn.addEventListener('click', toggleCaptainOptions);
+        }
+        if (elements.rangeInput) {
+        elements.rangeInput.addEventListener("input", handleRangeInputChange);
+    }
+
+        document.querySelectorAll('.captain-toggle').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                handleCaptainToggle(this);
+                updateTeamCountInput();
+            });
+        });
+        document.getElementById('id_num_teams_manual')?.addEventListener('input', function() {
+        document.getElementById('id_num_teams').value = this.value;
+        updateTeamCountInput();
+    });
+
+        if (elements.selectAllBtn) elements.selectAllBtn.addEventListener("click", selectAllMembers);
+        if (elements.clearAllBtn) elements.clearAllBtn.addEventListener("click", clearAllMembers);
+
+        elements.memberCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener("change", saveSelectedMembers);
+        });
+
+        if (elements.rangeInput) elements.rangeInput.addEventListener("input", updateRangeBubble);
+        if (elements.form) elements.form.addEventListener("submit", handleFormSubmit);
+
+        window.addEventListener("scroll", animateCardsOnScroll);
+        window.addEventListener("resize", debounce(adjustMemberGrid, 100));
+    }
+
+    // Search and Filter Functions
+function initializeSearchAndFilter() {
+    const searchInput = document.getElementById('memberSearch');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const filterBadges = document.querySelectorAll('.filter-badge');
+    const memberContainers = document.querySelectorAll('.member-checkbox-container');
+    const noResults = document.getElementById('noResults');
+
+    let currentFilter = 'all';
+    let currentSearchTerm = '';
+
+    // Search functionality
+    searchInput.addEventListener('input', debounce(function(e) {
+        currentSearchTerm = e.target.value.toLowerCase().trim();
+        filterMembers();
+    }, 300));
+
+    // Clear search
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        currentSearchTerm = '';
+        filterMembers();
+        searchInput.focus();
+    });
+
+    // Filter badges
+    filterBadges.forEach(badge => {
+        badge.addEventListener('click', function() {
+            // Update active badge
+            filterBadges.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            currentFilter = this.getAttribute('data-filter');
+            filterMembers();
+        });
+    });
+
+    function filterMembers() {
+        let visibleCount = 0;
+
+        memberContainers.forEach(container => {
+            const memberName = container.getAttribute('data-member-name');
+            const isCaptain = container.getAttribute('data-is-captain') === 'true';
+            const isSelected = container.getAttribute('data-is-selected') === 'true';
+            const isRecent = container.getAttribute('data-is-recent') === 'true';
+            const checkbox = container.querySelector('.member-checkbox-input');
+            const isChecked = checkbox ? checkbox.checked : false;
+
+            let matchesSearch = true;
+            let matchesFilter = true;
+
+            // Apply search filter
+            if (currentSearchTerm) {
+                matchesSearch = memberName.includes(currentSearchTerm);
+            }
+
+            // Apply category filter
+            switch (currentFilter) {
+                case 'captain':
+                    matchesFilter = isCaptain;
+                    break;
+                case 'recent':
+                    matchesFilter = isRecent;
+                    break;
+                case 'selected':
+                    matchesFilter = isChecked;
+                    break;
+                case 'all':
+                default:
+                    matchesFilter = true;
+            }
+
+            // Show/hide based on filters
+            if (matchesSearch && matchesFilter) {
+                container.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                container.classList.add('hidden');
+            }
+        });
+
+        // Show/hide no results message
+        if (visibleCount === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+
+        // Update selected count for visible items
+        updateSelectedCount();
+    }
+
+    // Initial filter
+    filterMembers();
+
+    // Update filters when selection changes
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('.member-checkbox-input')) {
+            // Update the data attribute
+            const container = e.target.closest('.member-checkbox-container');
+            if (container) {
+                container.setAttribute('data-is-selected', e.target.checked.toString());
+            }
+
+            // Re-apply filters if we're on the "selected" filter
+            if (currentFilter === 'selected') {
+                filterMembers();
+            }
+        }
+    });
+}
+
+
+
+    // Initialization
+    function initialize() {
+        loadSelectedMembers();
+        updateTeamsDisplay();
+        updateRangeBubble();
+        initializeSearchAndFilter();
+        updateTeamCountInput();
+
+        // Initialize captain UI
+        document.querySelectorAll('.captain-toggle').forEach(toggle => {
+            if (toggle.checked) updateCaptainUI(toggle);
+        });
+
+        // Initialize intensity bars
+        if (elements.intensityBars.length && elements.maxShuffleInput) {
+            elements.intensityBars.forEach(bar => {
+                bar.addEventListener("click", () => handleIntensityBarClick(bar));
+                if (bar.getAttribute("data-value") === elements.maxShuffleInput.value) {
+                    bar.classList.add("active");
+                }
+            });
+        }
+        // Initialize range input
+    if (elements.rangeInput) {
+        handleRangeInputChange(); // Set initial state
+    }
+
+        initCardAnimations();
+        initTooltips();
+        setupEventListeners();
+        adjustMemberGrid();
+    }
+
+    initialize();
 });
 </script>
 

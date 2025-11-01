@@ -1,0 +1,433 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Live Tournaments - Team Manager{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 text-primary fw-bold">
+                    <i class="bi bi-trophy me-2"></i>Tournaments Dashboard
+                </h1>
+                <a href="{% url 'tournament' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle me-1"></i>Create New Tournament
+                </a>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" id="userSearch" class="form-control form-control-lg" 
+                                       placeholder="Search users by username...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-info text-white">
+                                    <i class="bi bi-filter"></i>
+                                </span>
+                                <select class="form-select form-select-lg" id="userFilter">
+                                    <option value="all">All Users</option>
+                                    {% for user_data in tournaments_by_user %}
+                                    <option value="user-{{ user_data.user.username }}">{{ user_data.user.username|upper }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-success text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">{{ total_live_tournaments }}</h4>
+                            <small>LIVE TOURNAMENTS</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">{{ total_upcoming_tournaments }}</h4>
+                            <small>UPCOMING TOURNAMENTS</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-secondary text-white shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">{{ total_completed_tournaments }}</h4>
+                            <small>COMPLETED TOURNAMENTS</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark shadow-sm">
+                        <div class="card-body text-center">
+                            <h4 class="mb-0">{{ total_teams }}</h4>
+                            <small>TOTAL TEAMS</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group tournaments by user -->
+            {% if tournaments_by_user %}
+                {% for user_data in tournaments_by_user %}
+                <!-- User Section -->
+                <div class="card shadow-lg mb-4 border-0 user-section" id="user-{{ user_data.user.username }}" data-username="{{ user_data.user.username|lower }}">
+                    <div class="card-header bg-gradient-primary text-white py-3 user-header" 
+                         data-bs-toggle="collapse" 
+                         data-bs-target="#userContent-{{ user_data.user.username }}" 
+                         aria-expanded="false"
+                         style="cursor: pointer;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-chevron-down me-3 transition-icon"></i>
+                                <h4 class="mb-0 fw-bold">
+                                    <i class="bi bi-person-badge me-2"></i>{{ user_data.user.username|upper }}'S TOURNAMENTS
+                                </h4>
+                            </div>
+                            <div class="text-end">
+                                {% if user_data.live_tournaments %}
+                                <span class="badge bg-success text-white fs-6 px-3 py-2">
+                                    <i class="bi bi-broadcast me-1"></i>{{ user_data.live_tournaments|length }} LIVE
+                                </span>
+                                {% endif %}
+                                <span class="badge bg-info text-white fs-6 px-3 py-2 ms-2">
+                                    <i class="bi bi-clock me-1"></i>{{ user_data.upcoming_tournaments|length }} UPCOMING
+                                </span>
+                                <span class="badge bg-secondary text-white fs-6 px-3 py-2 ms-2">
+                                    <i class="bi bi-check-circle me-1"></i>{{ user_data.completed_tournaments|length }} COMPLETED
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Collapsible Content -->
+                    <div class="collapse" id="userContent-{{ user_data.user.username }}">
+                        <div class="card-body bg-light">
+
+                            <!-- Live Tournaments for this user -->
+                            {% if user_data.live_tournaments %}
+                            <div class="mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-success rounded p-2 me-3">
+                                        <i class="bi bi-broadcast-pin text-white fs-4"></i>
+                                    </div>
+                                    <h4 class="text-success fw-bold mb-0">LIVE TOURNAMENTS</h4>
+                                    <span class="badge bg-warning ms-3 fs-6">{{ user_data.live_tournaments|length }} ACTIVE</span>
+                                </div>
+                                <div class="row">
+                                    {% for tournament in user_data.live_tournaments %}
+                                    <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                        <div class="card h-100 border-success border-3 shadow-sm tournament-card">
+                                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-2">
+                                                <small class="fw-bold">{{ tournament.created_at|date:"M d, Y" }}</small>
+                                                <span class="badge bg-warning fs-7">LIVE</span>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title text-dark fw-bold">{{ tournament.name }}</h5>
+                                                <div class="mb-3">
+                                                    <span class="badge bg-dark">{{ tournament.total_overs }} OVERS</span>
+                                                    {% if tournament.single_batting %}
+                                                    <span class="badge bg-info ms-1">SINGLE BATTING</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="tournament-details">
+                                                    <p class="mb-2">
+                                                        <i class="bi bi-people me-2 text-primary"></i>
+                                                        <strong>{{ tournament.teams.count }} TEAMS</strong>
+                                                    </p>
+                                                    <p class="mb-2">
+                                                        <i class="bi bi-trophy me-2 text-primary"></i>
+                                                        <strong>{{ tournament.get_matches.count }} MATCHES PLAYED</strong>
+                                                    </p>
+                                                    <div class="progress mb-2" style="height: 8px;">
+                                                        <div class="progress-bar bg-success" style="width: {% widthratio tournament.get_matches.count tournament.teams.count 100 %}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        Progress: {{ tournament.get_matches.count }}/{{ tournament.teams.count }} matches
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer bg-transparent py-3">
+                                                <div class="d-grid gap-2">
+                                                    <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-success btn-lg fw-bold">
+                                                        <i class="bi bi-speedometer2 me-2"></i>DASHBOARD
+                                                    </a>
+                                                    <div class="btn-group w-100" role="group">
+                                                        <a href="{% url 'tournament_leaderboard' tournament.id %}" class="btn btn-outline-primary">
+                                                            <i class="bi bi-trophy me-1"></i>LEADERBOARD
+                                                        </a>
+                                                        <a href="{% url 'start_match' %}?tournament={{ tournament.id }}" class="btn btn-outline-info">
+                                                            <i class="bi bi-plus-circle me-1"></i>ADD MATCH
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Show other sections only when user section is expanded -->
+                            <div class="additional-sections">
+
+                                <!-- Upcoming Tournaments for this user -->
+                                {% if user_data.upcoming_tournaments %}
+                                <div class="mb-5">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-info rounded p-2 me-3">
+                                            <i class="bi bi-clock text-white fs-4"></i>
+                                        </div>
+                                        <h4 class="text-info fw-bold mb-0">UPCOMING TOURNAMENTS</h4>
+                                        <span class="badge bg-dark ms-3 fs-6">{{ user_data.upcoming_tournaments|length }} SCHEDULED</span>
+                                    </div>
+                                    <div class="row">
+                                        {% for tournament in user_data.upcoming_tournaments %}
+                                        <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                            <div class="card h-100 border-info border-3 shadow-sm tournament-card">
+                                                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center py-2">
+                                                    <small class="fw-bold">{{ tournament.created_at|date:"M d, Y" }}</small>
+                                                    <span class="badge bg-dark fs-7">UPCOMING</span>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h5 class="card-title text-dark fw-bold">{{ tournament.name }}</h5>
+                                                    <div class="mb-3">
+                                                        <span class="badge bg-secondary">{{ tournament.total_overs }} OVERS</span>
+                                                        {% if tournament.single_batting %}
+                                                        <span class="badge bg-info ms-1">SINGLE BATTING</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="tournament-details">
+                                                        <p class="mb-2">
+                                                            <i class="bi bi-people me-2 text-primary"></i>
+                                                            <strong>{{ tournament.teams.count }} TEAMS</strong>
+                                                        </p>
+                                                        <p class="mb-0">
+                                                            <i class="bi bi-calendar me-2 text-primary"></i>
+                                                            <strong>Created: {{ tournament.created_at|timesince }} ago</strong>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer bg-transparent py-3">
+                                                    <div class="d-grid">
+                                                        <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-info btn-lg fw-bold text-white">
+                                                            <i class="bi bi-gear me-2"></i>MANAGE TOURNAMENT
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Completed Tournaments for this user -->
+                                {% if user_data.completed_tournaments %}
+                                <div class="mb-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-secondary rounded p-2 me-3">
+                                            <i class="bi bi-check-circle text-white fs-4"></i>
+                                        </div>
+                                        <h4 class="text-secondary fw-bold mb-0">COMPLETED TOURNAMENTS</h4>
+                                        <span class="badge bg-dark ms-3 fs-6">{{ user_data.completed_tournaments|length }} FINISHED</span>
+                                    </div>
+                                    <div class="row">
+                                        {% for tournament in user_data.completed_tournaments %}
+                                        <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                            <div class="card h-100 border-secondary border-3 shadow-sm tournament-card">
+                                                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center py-2">
+                                                    <small class="fw-bold">{{ tournament.created_at|date:"M d, Y" }}</small>
+                                                    <span class="badge bg-dark fs-7">COMPLETED</span>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h5 class="card-title text-dark fw-bold">{{ tournament.name }}</h5>
+                                                    <div class="mb-3">
+                                                        <span class="badge bg-dark">{{ tournament.total_overs }} OVERS</span>
+                                                        <span class="badge bg-success ms-1">{{ tournament.get_matches.count }} MATCHES</span>
+                                                    </div>
+                                                    <div class="tournament-details">
+                                                        <p class="mb-2">
+                                                            <i class="bi bi-people me-2 text-primary"></i>
+                                                            <strong>{{ tournament.teams.count }} TEAMS PARTICIPATED</strong>
+                                                        </p>
+                                                        <p class="mb-2">
+                                                            {% with winner=tournament.get_winner %}
+                                                            {% if winner %}
+                                                            <i class="bi bi-trophy me-2 text-warning"></i>
+                                                            <strong>WINNER: <span class="text-success">{{ winner.name }}</span></strong>
+                                                            {% else %}
+                                                            <i class="bi bi-flag me-2 text-primary"></i>
+                                                            <strong>RESULT: <span class="text-secondary">NO WINNER</span></strong>
+                                                            {% endif %}
+                                                            {% endwith %}
+                                                        </p>
+                                                        <p class="mb-0">
+                                                            <i class="bi bi-calendar me-2 text-primary"></i>
+                                                            <strong>Completed: {{ tournament.created_at|timesince }} ago</strong>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer bg-transparent py-3">
+                                                    <div class="btn-group w-100" role="group">
+                                                        <a href="{% url 'tournament_leaderboard' tournament.id %}" class="btn btn-outline-primary btn-lg">
+                                                            <i class="bi bi-trophy me-1"></i>RESULTS
+                                                        </a>
+                                                        <a href="{% url 'tournament_detail' tournament.id %}" class="btn btn-outline-info btn-lg">
+                                                            <i class="bi bi-eye me-1"></i>DETAILS
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+            {% else %}
+            <!-- No tournaments found -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-trophy display-1 text-muted"></i>
+                    </div>
+                    <h3 class="text-muted fw-bold mb-3">No Tournaments Found</h3>
+                    <p class="text-muted fs-5 mb-4">Create your first tournament to see it here!</p>
+                    <a href="{% url 'tournament' %}" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-plus-circle me-2"></i>Create Tournament
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<style>
+.tournament-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.tournament-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.user-header:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+}
+
+.transition-icon {
+    transition: transform 0.3s ease;
+}
+
+.user-header[aria-expanded="true"] .transition-icon {
+    transform: rotate(180deg);
+}
+
+.tournament-details {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.fs-7 {
+    font-size: 0.75rem !important;
+}
+
+.user-section {
+    transition: all 0.3s ease;
+}
+
+.user-section.hidden {
+    display: none !important;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const userSearch = document.getElementById('userSearch');
+    const userFilter = document.getElementById('userFilter');
+    const clearSearch = document.getElementById('clearSearch');
+    const userSections = document.querySelectorAll('.user-section');
+
+    // Search function
+    function filterUsers() {
+        const searchTerm = userSearch.value.toLowerCase();
+        const filterValue = userFilter.value;
+        
+        userSections.forEach(section => {
+            const username = section.getAttribute('data-username');
+            const matchesSearch = username.includes(searchTerm);
+            const matchesFilter = filterValue === 'all' || section.id === filterValue;
+            
+            if (matchesSearch && matchesFilter) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+    }
+
+    // Event listeners
+    userSearch.addEventListener('input', filterUsers);
+    userFilter.addEventListener('change', filterUsers);
+    
+    clearSearch.addEventListener('click', function() {
+        userSearch.value = '';
+        filterUsers();
+    });
+
+    // Auto-expand sections with live tournaments
+    userSections.forEach(section => {
+        const hasLiveTournaments = section.querySelector('.bg-success'); // Check if has live tournaments badge
+        if (hasLiveTournaments) {
+            // You can auto-expand if needed
+        }
+    });
+});
+</script>
+{% endblock %}

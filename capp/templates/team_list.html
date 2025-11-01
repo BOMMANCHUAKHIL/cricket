@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-
+{% load custom_filters %}
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
@@ -329,6 +329,69 @@
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 1.5rem;
     }
+    .btn-team-1 {
+    background-color: #6c5ce7; /* Purple */
+    color: white;
+    /* Add this to your CSS */
+.btn-team-0 {
+    background: rgba(0, 247, 255, 0.25);
+    color: var(--neon-blue);
+    border: 1px solid rgba(0, 247, 255, 0.5);
+}
+.btn-team-0:hover {
+    background: var(--neon-blue);
+    color: black;
+}
+
+.btn-team-1 {
+    background: rgba(255, 0, 247, 0.25);
+    color: var(--neon-pink);
+    border: 1px solid rgba(255, 0, 247, 0.5);
+}
+.btn-team-1:hover {
+    background: var(--neon-pink);
+    color: black;
+}
+
+.btn-team-2 {
+    background: rgba(255, 215, 0, 0.25);
+    color: var(--gold);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+}
+.btn-team-2:hover {
+    background: var(--gold);
+    color: black;
+}
+
+.btn-team-3 {
+    background: rgba(0, 255, 136, 0.25);
+    color: #00ff88;
+    border: 1px solid rgba(0, 255, 136, 0.5);
+}
+.btn-team-3:hover {
+    background: #00ff88;
+    color: black;
+}
+
+.btn-team-4 {
+    background: rgba(255, 128, 0, 0.25);
+    color: #ff8000;
+    border: 1px solid rgba(255, 128, 0, 0.5);
+}
+.btn-team-4:hover {
+    background: #ff8000;
+    color: black;
+}
+
+.btn-team-5 {
+    background: rgba(157, 0, 255, 0.25);
+    color: #9d00ff;
+    border: 1px solid rgba(157, 0, 255, 0.5);
+}
+.btn-team-5:hover {
+    background: #9d00ff;
+    color: white;
+}
 
     .available-member-card {
       background: rgba(255, 255, 255, 0.08);
@@ -423,6 +486,95 @@
         font-size: 2.75rem;
       }
 
+      /* Add these to your existing CSS */
+
+.available-members-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.available-members-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg,
+                rgba(0, 247, 255, 0.05) 0%,
+                rgba(157, 0, 255, 0.05) 100%);
+    z-index: -1;
+}
+
+.available-member-card {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(0, 247, 255, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 247, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+}
+
+.available-member-card:hover {
+    border-color: var(--neon-blue);
+    box-shadow: 0 8px 25px rgba(0, 247, 255, 0.2);
+}
+
+.member-name i {
+    color: var(--neon-pink);
+    transition: all 0.3s ease;
+}
+
+.available-member-card:hover .member-name i {
+    transform: rotate(15deg);
+    color: var(--neon-blue);
+}
+
+.member-position i {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8em;
+}
+
+.btn-team-1 {
+    background: linear-gradient(135deg, rgba(0, 247, 255, 0.2), rgba(0, 247, 255, 0.4));
+    color: var(--neon-blue);
+    border: 1px solid rgba(0, 247, 255, 0.5);
+}
+
+.btn-team-2 {
+    background: linear-gradient(135deg, rgba(255, 0, 247, 0.2), rgba(255, 0, 247, 0.4));
+    color: var(--neon-pink);
+    border: 1px solid rgba(255, 0, 247, 0.5);
+}
+
+.btn-team-action i {
+    transition: all 0.3s ease;
+}
+
+.btn-team-action:hover i {
+    transform: scale(1.2);
+}
+
+.team-name {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-team-action:hover .team-name {
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .team-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn-team-action {
+        width: 100%;
+    }
+}
+
       .team-grid {
         grid-template-columns: 1fr;
         gap: 2rem;
@@ -470,6 +622,311 @@
       }
 
     }
+
+    /* Available Members Section - Enhanced */
+.available-members-section {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    margin-top: 4rem;
+    border: 1px solid rgba(0, 247, 255, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 247, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.available-members-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 247, 255, 0.05) 0%, rgba(157, 0, 255, 0.05) 100%);
+    z-index: -1;
+}
+
+.section-title {
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+    font-size: 2rem; /* Increased from previous size */
+    letter-spacing: 1px;
+}
+
+.available-members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.available-member-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    padding: 1.5rem; /* Increased padding */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-left: 4px solid var(--neon-purple);
+    transition: all 0.3s ease;
+    min-height: 150px; /* Added minimum height */
+}
+
+.available-member-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 247, 255, 0.3);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.member-info {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.member-name {
+    font-weight: 600;
+    color: var(--neon-blue);
+    font-size: 1.3rem; /* Increased from ~1rem */
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.member-position {
+    font-size: 1.1rem; /* Increased from 0.85rem */
+    color: rgba(255, 255, 255, 0.9); /* Brighter text */
+    background: rgba(0, 247, 255, 0.15);
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    display: inline-block;
+    width: fit-content;
+}
+
+.team-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto; /* Pushes buttons to bottom */
+}
+
+.btn-team-action {
+    border: none;
+    padding: 0.6rem 1rem; /* Increased padding */
+    border-radius: 0.75rem;
+    font-size: 0.95rem; /* Increased from 0.85rem */
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+}
+
+/* Team Button Styles with Unique Colors */
+.btn-team-action {
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    margin: 0.2rem;
+}
+
+/* Team 1 - Blue */
+.btn-team-1 {
+    background: rgba(0, 247, 255, 0.25);
+    color: var(--neon-blue);
+    border-color: rgba(0, 247, 255, 0.4);
+}
+
+/* Team 2 - Yellow */
+.btn-team-2 {
+    background: rgba(255, 215, 0, 0.25);
+    color: var(--neon-yellow);
+    border-color: rgba(255, 215, 0, 0.4);
+}
+
+/* Team 3 - Pink */
+.btn-team-3 {
+    background: rgba(255, 0, 247, 0.25);
+    color: var(--neon-pink);
+    border-color: rgba(255, 0, 247, 0.4);
+}
+
+/* Team 4 - Green */
+.btn-team-4 {
+    background: rgba(0, 255, 136, 0.25);
+    color: var(--neon-green);
+    border-color: rgba(0, 255, 136, 0.4);
+}
+
+/* Team 5 - Purple */
+.btn-team-5 {
+    background: rgba(157, 0, 255, 0.25);
+    color: var(--neon-purple);
+    border-color: rgba(157, 0, 255, 0.4);
+}
+
+/* Hover Effects */
+.btn-team-action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    filter: brightness(1.1);
+}
+
+.btn-team-1:hover {
+    background: var(--neon-blue);
+    color: black;
+    box-shadow: 0 5px 15px rgba(0, 247, 255, 0.4);
+}
+
+.btn-team-2:hover {
+    background: var(--neon-yellow);
+    color: black;
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+}
+
+.btn-team-3:hover {
+    background: var(--neon-pink);
+    color: black;
+    box-shadow: 0 5px 15px rgba(255, 0, 247, 0.4);
+}
+
+.btn-team-4:hover {
+    background: var(--neon-green);
+    color: black;
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+}
+
+.btn-team-5:hover {
+    background: var(--neon-purple);
+    color: white;
+    box-shadow: 0 5px 15px rgba(157, 0, 255, 0.4);
+}
+
+/* Icons */
+.fa-user-astronaut {
+    font-size: 1.1rem;
+    color: var(--neon-orange);
+    transition: transform 0.3s ease;
+}
+
+/* Search Bar Styles */
+.search-container {
+    position: relative;
+}
+
+.search-container .input-group {
+    box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.search-container .input-group:focus-within {
+    box-shadow: 0 0 30px rgba(0, 247, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.border-neon {
+    border-color: rgba(0, 247, 255, 0.4) !important;
+}
+
+.input-group-text.bg-dark {
+    background: rgba(15, 23, 42, 0.9) !important;
+    color: var(--neon-blue) !important;
+}
+
+.form-control.bg-dark {
+    background: rgba(15, 23, 42, 0.9) !important;
+    color: white !important;
+    border-left: none;
+}
+
+.form-control.bg-dark::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control.bg-dark:focus {
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: white !important;
+    border-color: var(--neon-blue) !important;
+    box-shadow: 0 0 15px rgba(0, 247, 255, 0.3) !important;
+}
+
+.btn-outline-danger.border-neon {
+    color: #ff6b6b;
+    border-color: rgba(255, 107, 107, 0.5);
+}
+
+.btn-outline-danger.border-neon:hover {
+    background: #ff6b6b;
+    color: black;
+    border-color: #ff6b6b;
+}
+
+.text-neon-blue {
+    color: var(--neon-blue) !important;
+    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+}
+
+.btn-team-action:hover .fa-user-plus {
+    transform: scale(1.2);
+}
+
+/* Make sure these CSS variables are defined in your :root */
+:root {
+    --neon-blue: #00f7ff;
+    --neon-yellow: #FFD700;
+    --neon-pink: #ff00f7;
+    --neon-green: #00ff88;
+    --neon-purple: #9d00ff;
+    --neon-orange: #FF5733;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .available-members-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title {
+        font-size: 1.7rem;
+    }
+
+    .member-name {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .available-members-section {
+        padding: 1.5rem;
+    }
+
+    .team-actions {
+        flex-direction: column;
+    }
+
+    .btn-team-action {
+        width: 100%;
+    }
+}
   </style>
 </head>
 <body>
@@ -542,44 +999,60 @@
   </div>
   {% endif %}
 
-  {% if user.is_authenticated and available_members and teams|length >= 2 %}
-  <div class="available-members-section mt-5 animate__animated animate__fadeIn">
-      <h3 class="text-center mb-4">
-          <i class="fas fa-user-plus"></i> AVAILABLE RECRUITS ({{ available_members.count }})
-      </h3>
+{% if user.is_authenticated and available_members and teams|length >= 2 %}
+<div class="available-members-section animate__animated animate__fadeIn">
+    <h3 class="section-title">
+        <i class="fas fa-user-plus me-2"></i> AVAILABLE RECRUITS ({{ available_members.count }})
+    </h3>
 
-      <div class="available-members-grid">
-          {% for member in available_members %}
-          <div class="available-member-card">
-              <div class="member-info">
-                  <span class="member-name">{{ member.name }}</span>
-                  <span class="member-position">#{{ member.position }}</span>
-              </div>
+     <!-- ADD SEARCH BAR HERE -->
+    <div class="search-container mb-4" style="max-width: 500px; margin: 0 auto;">
+        <div class="input-group input-group-lg">
+            <span class="input-group-text bg-dark border-neon">
+                <i class="fas fa-search text-neon-blue"></i>
+            </span>
+            <input type="text"
+                   class="form-control bg-dark text-white border-neon"
+                   id="memberSearch"
+                   placeholder="Search recruits by name..."
+                   aria-label="Search members">
+            <button type="button" class="btn btn-outline-danger border-neon" id="clearSearch">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <!-- END SEARCH BAR -->
 
-              <div class="team-actions">
-                  <form method="post" action="{% url 'add_member_to_team' %}">
-                      {% csrf_token %}
-                      <input type="hidden" name="member_id" value="{{ member.id }}">
-                      <input type="hidden" name="team_id" value="{{ teams.0.id }}">
-                      <button type="submit" class="btn-team-action btn-team-1">
-                          <i class="fas fa-user-plus"></i> {{ teams.0.name|truncatechars:12 }}
-                      </button>
-                  </form>
+    <div class="available-members-grid">
+        {% for member in available_members %}
+        <div class="available-member-card animate__animated animate__fadeInUp">
+            <div class="member-info">
+                <span class="member-name">
+                    <i class="fas fa-user-astronaut me-2"></i>{{ member.name }}
+                </span>
+                <span class="member-position">
+                    #{{ member.position }}
+                </span>
+            </div>
 
-                  <form method="post" action="{% url 'add_member_to_team' %}">
-                      {% csrf_token %}
-                      <input type="hidden" name="member_id" value="{{ member.id }}">
-                      <input type="hidden" name="team_id" value="{{ teams.1.id }}">
-                      <button type="submit" class="btn-team-action btn-team-2">
-                          <i class="fas fa-user-plus"></i> {{ teams.1.name|truncatechars:12 }}
-                      </button>
-                  </form>
-              </div>
-          </div>
-          {% endfor %}
-      </div>
-  </div>
-  {% endif %}
+            <div class="team-actions">
+                {% for team in teams %}
+                <form method="post" action="{% url 'add_member_to_team' %}" class="w-100">
+                    {% csrf_token %}
+                    <input type="hidden" name="member_id" value="{{ member.id }}">
+                    <input type="hidden" name="team_id" value="{{ team.id }}">
+                    <button type="submit" class="btn-team-action btn-team-{{ forloop.counter0|mod:6 }}">
+                        <i class="fas fa-user-plus me-2"></i>
+                        <span class="team-name">{{ team.name }}</span>
+                    </button>
+                </form>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
   {% if user.is_authenticated and teams %}
   <div class="text-center mt-5">
@@ -711,6 +1184,79 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ... rest of your existing JavaScript ...
+});
+
+
+// Search functionality for available members
+function initializeMemberSearch() {
+    const searchInput = document.getElementById('memberSearch');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const memberCards = document.querySelectorAll('.available-member-card');
+
+    if (!searchInput) return;
+
+    function filterMembers() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        memberCards.forEach(card => {
+            const memberName = card.querySelector('.member-name').textContent.toLowerCase();
+            const matchesSearch = memberName.includes(searchTerm);
+
+            if (matchesSearch) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Optional: Show no results message
+        const noResults = document.getElementById('noResults');
+        if (!noResults && visibleCount === 0 && searchTerm) {
+            const grid = document.querySelector('.available-members-grid');
+            const message = document.createElement('div');
+            message.id = 'noResults';
+            message.className = 'col-12 text-center py-5';
+            message.innerHTML = `
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-neon-blue">No recruits found</h4>
+                <p class="text-muted">No members match your search for "${searchTerm}"</p>
+            `;
+            grid.appendChild(message);
+        } else if (noResults && visibleCount > 0) {
+            noResults.remove();
+        }
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', debounce(filterMembers, 300));
+
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        filterMembers();
+        searchInput.focus();
+    });
+
+    // Debounce function if not already defined
+    function debounce(func, delay) {
+        let timeout;
+        return function() {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), delay);
+        };
+    }
+}
+
+// Initialize search when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // ... your existing code ...
+
+    initializeMemberSearch();
+
+    // ... rest of your existing JavaScript ...
 });
 </script>
 

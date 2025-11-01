@@ -1,415 +1,415 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Sign Up - SPL TeamSplitter Pro{% endblock %}
+<!--{% extends "base.html" %}-->
+<!--{% load static %}-->
+<!--{% block title %}Sign Up - SPL TeamSplitter Pro{% endblock %}-->
 
-{% block content %}
+<!--{% block content %}-->
 <!-- 🌌 Futuristic Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<!--<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">-->
 
-<style>
+<!--<style>-->
   /* 🌠 Cosmic Base Styles */
-  :root {
-    --neon-blue: #00f7ff;
-    --neon-purple: #9600ff;
-    --deep-space: #0a0a20;
-    --starlight: rgba(255, 255, 255, 0.9);
-  }
-  
-  body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    font-family: 'Montserrat', sans-serif;
-    background: var(--deep-space);
-    color: white;
-  }
+<!--  :root {-->
+<!--    --neon-blue: #00f7ff;-->
+<!--    --neon-purple: #9600ff;-->
+<!--    --deep-space: #0a0a20;-->
+<!--    --starlight: rgba(255, 255, 255, 0.9);-->
+<!--  }-->
+
+<!--  body, html {-->
+<!--    margin: 0;-->
+<!--    padding: 0;-->
+<!--    height: 100%;-->
+<!--    overflow: hidden;-->
+<!--    font-family: 'Montserrat', sans-serif;-->
+<!--    background: var(--deep-space);-->
+<!--    color: white;-->
+<!--  }-->
 
   /* 🚀 Canvas Background */
-  #particleCanvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-  }
+<!--  #particleCanvas {-->
+<!--    position: fixed;-->
+<!--    top: 0;-->
+<!--    left: 0;-->
+<!--    width: 100%;-->
+<!--    height: 100%;-->
+<!--    z-index: -1;-->
+<!--  }-->
 
   /* 💎 Cyber Card */
-  .cyber-card {
-    background: rgba(15, 15, 30, 0.3);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 16px;
-    padding: 2.5rem;
-    width: 100%;
-    max-width: 500px;
-    border: 1px solid rgba(0, 247, 255, 0.3);
-    box-shadow:
-      0 0 25px rgba(0, 247, 255, 0.2),
-      0 0 50px rgba(150, 0, 255, 0.15),
-      inset 0 0 15px rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
-    animation: float 6s ease-in-out infinite;
-  }
+<!--  .cyber-card {-->
+<!--    background: rgba(15, 15, 30, 0.3);-->
+<!--    backdrop-filter: blur(12px);-->
+<!--    -webkit-backdrop-filter: blur(12px);-->
+<!--    border-radius: 16px;-->
+<!--    padding: 2.5rem;-->
+<!--    width: 100%;-->
+<!--    max-width: 500px;-->
+<!--    border: 1px solid rgba(0, 247, 255, 0.3);-->
+<!--    box-shadow:-->
+<!--      0 0 25px rgba(0, 247, 255, 0.2),-->
+<!--      0 0 50px rgba(150, 0, 255, 0.15),-->
+<!--      inset 0 0 15px rgba(255, 255, 255, 0.1);-->
+<!--    position: relative;-->
+<!--    overflow: hidden;-->
+<!--    animation: float 6s ease-in-out infinite;-->
+<!--  }-->
 
-  .cyber-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      to bottom right,
-      rgba(0, 255, 255, 0) 0%,
-      rgba(0, 255, 255, 0.1) 50%,
-      rgba(0, 255, 255, 0) 100%
-    );
-    transform: rotate(30deg);
-    animation: shine 6s infinite;
-  }
+<!--  .cyber-card::before {-->
+<!--    content: '';-->
+<!--    position: absolute;-->
+<!--    top: -50%;-->
+<!--    left: -50%;-->
+<!--    width: 200%;-->
+<!--    height: 200%;-->
+<!--    background: linear-gradient(-->
+<!--      to bottom right,-->
+<!--      rgba(0, 255, 255, 0) 0%,-->
+<!--      rgba(0, 255, 255, 0.1) 50%,-->
+<!--      rgba(0, 255, 255, 0) 100%-->
+<!--    );-->
+<!--    transform: rotate(30deg);-->
+<!--    animation: shine 6s infinite;-->
+<!--  }-->
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0) rotate(0.5deg); }
-    50% { transform: translateY(-15px) rotate(-0.5deg); }
-  }
+<!--  @keyframes float {-->
+<!--    0%, 100% { transform: translateY(0) rotate(0.5deg); }-->
+<!--    50% { transform: translateY(-15px) rotate(-0.5deg); }-->
+<!--  }-->
 
-  @keyframes shine {
-    0% { left: -100%; top: -100%; }
-    100% { left: 100%; top: 100%; }
-  }
+<!--  @keyframes shine {-->
+<!--    0% { left: -100%; top: -100%; }-->
+<!--    100% { left: 100%; top: 100%; }-->
+<!--  }-->
 
   /* 🛰️ Header Styles */
-  .card-header {
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)) !important;
-    border: none !important;
-    font-family: 'Orbitron', sans-serif;
-    letter-spacing: 1px;
-    position: relative;
-    overflow: hidden;
-  }
+<!--  .card-header {-->
+<!--    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)) !important;-->
+<!--    border: none !important;-->
+<!--    font-family: 'Orbitron', sans-serif;-->
+<!--    letter-spacing: 1px;-->
+<!--    position: relative;-->
+<!--    overflow: hidden;-->
+<!--  }-->
 
-  .card-header h4 {
-    margin: 0;
-    position: relative;
-    z-index: 1;
-    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
-  }
+<!--  .card-header h4 {-->
+<!--    margin: 0;-->
+<!--    position: relative;-->
+<!--    z-index: 1;-->
+<!--    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);-->
+<!--  }-->
 
   /* 👨‍🚀 Form Elements */
-  .form-label {
-    color: var(--neon-blue);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
+<!--  .form-label {-->
+<!--    color: var(--neon-blue);-->
+<!--    font-weight: 600;-->
+<!--    letter-spacing: 0.5px;-->
+<!--  }-->
 
-  input {
-    width: 100%;
-    padding: 12px 15px;
-    background: rgba(10, 10, 30, 0.7);
-    border: 1px solid rgba(0, 247, 255, 0.3);
-    border-radius: 8px;
-    color: white;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-  }
+<!--  input {-->
+<!--    width: 100%;-->
+<!--    padding: 12px 15px;-->
+<!--    background: rgba(10, 10, 30, 0.7);-->
+<!--    border: 1px solid rgba(0, 247, 255, 0.3);-->
+<!--    border-radius: 8px;-->
+<!--    color: white;-->
+<!--    font-size: 1rem;-->
+<!--    transition: all 0.3s ease;-->
+<!--  }-->
 
-  input:focus {
-    outline: none;
-    border-color: var(--neon-blue);
-    box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
-    background: rgba(20, 20, 50, 0.9);
-  }
+<!--  input:focus {-->
+<!--    outline: none;-->
+<!--    border-color: var(--neon-blue);-->
+<!--    box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);-->
+<!--    background: rgba(20, 20, 50, 0.9);-->
+<!--  }-->
 
   /* 🪐 Submit Button */
-  .btn-success {
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)) !important;
-    border: none !important;
-    padding: 12px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.5px !important;
-    transition: all 0.3s ease !important;
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-  }
+<!--  .btn-success {-->
+<!--    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)) !important;-->
+<!--    border: none !important;-->
+<!--    padding: 12px !important;-->
+<!--    font-weight: 600 !important;-->
+<!--    letter-spacing: 0.5px !important;-->
+<!--    transition: all 0.3s ease !important;-->
+<!--    position: relative;-->
+<!--    overflow: hidden;-->
+<!--    z-index: 1;-->
+<!--  }-->
 
-  .btn-success:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 
-      0 0 20px rgba(0, 247, 255, 0.5),
-      0 0 40px rgba(150, 0, 255, 0.3) !important;
-  }
+<!--  .btn-success:hover {-->
+<!--    transform: translateY(-2px) !important;-->
+<!--    box-shadow: -->
+<!--      0 0 20px rgba(0, 247, 255, 0.5),-->
+<!--      0 0 40px rgba(150, 0, 255, 0.3) !important;-->
+<!--  }-->
 
-  .btn-success::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: 0.5s;
-    z-index: -1;
-  }
+<!--  .btn-success::before {-->
+<!--    content: '';-->
+<!--    position: absolute;-->
+<!--    top: 0;-->
+<!--    left: -100%;-->
+<!--    width: 100%;-->
+<!--    height: 100%;-->
+<!--    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);-->
+<!--    transition: 0.5s;-->
+<!--    z-index: -1;-->
+<!--  }-->
 
-  .btn-success:hover::before {
-    left: 100%;
-  }
+<!--  .btn-success:hover::before {-->
+<!--    left: 100%;-->
+<!--  }-->
 
   /* 🔗 Footer Link */
-  .card-footer {
-    background: transparent !important;
-    border-top: 1px solid rgba(0, 247, 255, 0.2) !important;
-  }
+<!--  .card-footer {-->
+<!--    background: transparent !important;-->
+<!--    border-top: 1px solid rgba(0, 247, 255, 0.2) !important;-->
+<!--  }-->
 
-  .card-footer a {
-    color: var(--neon-blue) !important;
-    text-decoration: none;
-    position: relative;
-  }
+<!--  .card-footer a {-->
+<!--    color: var(--neon-blue) !important;-->
+<!--    text-decoration: none;-->
+<!--    position: relative;-->
+<!--  }-->
 
-  .card-footer a::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 1px;
-    background: var(--neon-blue);
-    transition: width 0.3s ease;
-  }
+<!--  .card-footer a::after {-->
+<!--    content: '';-->
+<!--    position: absolute;-->
+<!--    bottom: -2px;-->
+<!--    left: 0;-->
+<!--    width: 0;-->
+<!--    height: 1px;-->
+<!--    background: var(--neon-blue);-->
+<!--    transition: width 0.3s ease;-->
+<!--  }-->
 
-  .card-footer a:hover::after {
-    width: 100%;
-  }
+<!--  .card-footer a:hover::after {-->
+<!--    width: 100%;-->
+<!--  }-->
 
   /* 🌐 Container */
-  .container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
-</style>
+<!--  .container {-->
+<!--    display: flex;-->
+<!--    align-items: center;-->
+<!--    justify-content: center;-->
+<!--    min-height: 100vh;-->
+<!--    padding: 20px;-->
+<!--  }-->
+<!--</style>-->
 
 <!-- 🌌 Particle Canvas -->
-<canvas id="particleCanvas"></canvas>
+<!--<canvas id="particleCanvas"></canvas>-->
 
 <!-- 🚀 Main Content -->
-<div class="container">
-  <div class="cyber-card">
-    <div class="card-header bg-primary text-white text-center">
-      <h4>CREATE YOUR ACCOUNT</h4>
-    </div>
-    <div class="card-body">
-      <form method="post">
-        {% csrf_token %}
-        {% for field in form %}
-          <div class="mb-3">
-            <label class="form-label">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-              <div class="text-danger small">{{ field.errors.0 }}</div>
-            {% endif %}
-          </div>
-        {% endfor %}
-        <button type="submit" class="btn btn-success w-100">SIGN UP</button>
-      </form>
-    </div>
-    <div class="card-footer text-center">
-      Already have an account? <a href="{% url 'login' %}">Login here</a>
-    </div>
-  </div>
-</div>
+<!--<div class="container">-->
+<!--  <div class="cyber-card">-->
+<!--    <div class="card-header bg-primary text-white text-center">-->
+<!--      <h4>CREATE YOUR ACCOUNT</h4>-->
+<!--    </div>-->
+<!--    <div class="card-body">-->
+<!--      <form method="post">-->
+<!--        {% csrf_token %}-->
+<!--        {% for field in form %}-->
+<!--          <div class="mb-3">-->
+<!--            <label class="form-label">{{ field.label }}</label>-->
+<!--            {{ field }}-->
+<!--            {% if field.errors %}-->
+<!--              <div class="text-danger small">{{ field.errors.0 }}</div>-->
+<!--            {% endif %}-->
+<!--          </div>-->
+<!--        {% endfor %}-->
+<!--        <button type="submit" class="btn btn-success w-100">SIGN UP</button>-->
+<!--      </form>-->
+<!--    </div>-->
+<!--    <div class="card-footer text-center">-->
+<!--      Already have an account? <a href="{% url 'login' %}">Login here</a>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
 
 <!-- 🌌 Particle Animation JavaScript -->
-<script>
+<!--<script>-->
   // Particle Canvas Setup
-  const canvas = document.getElementById('particleCanvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+<!--  const canvas = document.getElementById('particleCanvas');-->
+<!--  const ctx = canvas.getContext('2d');-->
+<!--  canvas.width = window.innerWidth;-->
+<!--  canvas.height = window.innerHeight;-->
 
   // Configuration
-  const config = {
-    particleCount: 150,
-    particleMaxSize: 3,
-    connectionDistance: 150,
-    particleSpeed: 0.5,
-    hue: 180,
-    hueCycleSpeed: 0.5,
-    repulsionRadius: 100
-  };
+<!--  const config = {-->
+<!--    particleCount: 150,-->
+<!--    particleMaxSize: 3,-->
+<!--    connectionDistance: 150,-->
+<!--    particleSpeed: 0.5,-->
+<!--    hue: 180,-->
+<!--    hueCycleSpeed: 0.5,-->
+<!--    repulsionRadius: 100-->
+<!--  };-->
 
   // Mouse position
-  const mouse = { x: null, y: null, radius: 150 };
+<!--  const mouse = { x: null, y: null, radius: 150 };-->
 
   // Track mouse position
-  window.addEventListener('mousemove', (e) => {
-    mouse.x = e.x;
-    mouse.y = e.y;
-  });
+<!--  window.addEventListener('mousemove', (e) => {-->
+<!--    mouse.x = e.x;-->
+<!--    mouse.y = e.y;-->
+<!--  });-->
 
-  window.addEventListener('mouseout', () => {
-    mouse.x = undefined;
-    mouse.y = undefined;
-  });
+<!--  window.addEventListener('mouseout', () => {-->
+<!--    mouse.x = undefined;-->
+<!--    mouse.y = undefined;-->
+<!--  });-->
 
   // Particle class
-  class Particle {
-    constructor() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height;
-      this.size = Math.random() * config.particleMaxSize + 1;
-      this.baseX = this.x;
-      this.baseY = this.y;
-      this.density = (Math.random() * 30) + 1;
-      this.vx = (Math.random() - 0.5) * config.particleSpeed;
-      this.vy = (Math.random() - 0.5) * config.particleSpeed;
-      this.hue = Math.random() * 60 + config.hue - 30;
-      this.lightness = Math.random() * 20 + 50;
-      this.alpha = Math.random() * 0.4 + 0.1;
-    }
+<!--  class Particle {-->
+<!--    constructor() {-->
+<!--      this.x = Math.random() * canvas.width;-->
+<!--      this.y = Math.random() * canvas.height;-->
+<!--      this.size = Math.random() * config.particleMaxSize + 1;-->
+<!--      this.baseX = this.x;-->
+<!--      this.baseY = this.y;-->
+<!--      this.density = (Math.random() * 30) + 1;-->
+<!--      this.vx = (Math.random() - 0.5) * config.particleSpeed;-->
+<!--      this.vy = (Math.random() - 0.5) * config.particleSpeed;-->
+<!--      this.hue = Math.random() * 60 + config.hue - 30;-->
+<!--      this.lightness = Math.random() * 20 + 50;-->
+<!--      this.alpha = Math.random() * 0.4 + 0.1;-->
+<!--    }-->
 
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.closePath();
-      ctx.fillStyle = `hsla(${this.hue}, 100%, ${this.lightness}%, ${this.alpha})`;
-      ctx.fill();
-    }
+<!--    draw() {-->
+<!--      ctx.beginPath();-->
+<!--      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);-->
+<!--      ctx.closePath();-->
+<!--      ctx.fillStyle = `hsla(${this.hue}, 100%, ${this.lightness}%, ${this.alpha})`;-->
+<!--      ctx.fill();-->
+<!--    }-->
 
-    update() {
+<!--    update() {-->
       // Boundary check with bounce
-      if (this.x < 0 || this.x > canvas.width) {
-        this.vx = -this.vx * 0.8;
-        this.x = this.x < 0 ? 0 : canvas.width;
-      }
-      if (this.y < 0 || this.y > canvas.height) {
-        this.vy = -this.vy * 0.8;
-        this.y = this.y < 0 ? 0 : canvas.height;
-      }
+<!--      if (this.x < 0 || this.x > canvas.width) {-->
+<!--        this.vx = -this.vx * 0.8;-->
+<!--        this.x = this.x < 0 ? 0 : canvas.width;-->
+<!--      }-->
+<!--      if (this.y < 0 || this.y > canvas.height) {-->
+<!--        this.vy = -this.vy * 0.8;-->
+<!--        this.y = this.y < 0 ? 0 : canvas.height;-->
+<!--      }-->
 
       // Mouse repulsion
-      if (mouse.x && mouse.y) {
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < mouse.radius) {
-          const forceDirectionX = dx / distance;
-          const forceDirectionY = dy / distance;
-          const force = (mouse.radius - distance) / mouse.radius * 2;
-          
-          this.vx -= forceDirectionX * force * 0.5;
-          this.vy -= forceDirectionY * force * 0.5;
-        }
-      }
+<!--      if (mouse.x && mouse.y) {-->
+<!--        const dx = mouse.x - this.x;-->
+<!--        const dy = mouse.y - this.y;-->
+<!--        const distance = Math.sqrt(dx * dx + dy * dy);-->
+
+<!--        if (distance < mouse.radius) {-->
+<!--          const forceDirectionX = dx / distance;-->
+<!--          const forceDirectionY = dy / distance;-->
+<!--          const force = (mouse.radius - distance) / mouse.radius * 2;-->
+
+<!--          this.vx -= forceDirectionX * force * 0.5;-->
+<!--          this.vy -= forceDirectionY * force * 0.5;-->
+<!--        }-->
+<!--      }-->
 
       // Apply velocity with damping
-      this.vx *= 0.98;
-      this.vy *= 0.98;
-      
+<!--      this.vx *= 0.98;-->
+<!--      this.vy *= 0.98;-->
+
       // Move particle
-      this.x += this.vx;
-      this.y += this.vy;
-    }
-  }
+<!--      this.x += this.vx;-->
+<!--      this.y += this.vy;-->
+<!--    }-->
+<!--  }-->
 
   // Create particles
-  let particles = [];
-  function initParticles() {
-    particles = [];
-    for (let i = 0; i < config.particleCount; i++) {
-      particles.push(new Particle());
-    }
-  }
+<!--  let particles = [];-->
+<!--  function initParticles() {-->
+<!--    particles = [];-->
+<!--    for (let i = 0; i < config.particleCount; i++) {-->
+<!--      particles.push(new Particle());-->
+<!--    }-->
+<!--  }-->
 
   // Connect particles with lines
-  function connectParticles() {
-    for (let a = 0; a < particles.length; a++) {
-      for (let b = a; b < particles.length; b++) {
-        const dx = particles[a].x - particles[b].x;
-        const dy = particles[a].y - particles[b].y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+<!--  function connectParticles() {-->
+<!--    for (let a = 0; a < particles.length; a++) {-->
+<!--      for (let b = a; b < particles.length; b++) {-->
+<!--        const dx = particles[a].x - particles[b].x;-->
+<!--        const dy = particles[a].y - particles[b].y;-->
+<!--        const distance = Math.sqrt(dx * dx + dy * dy);-->
 
-        if (distance < config.connectionDistance) {
-          const opacity = 1 - (distance / config.connectionDistance);
-          ctx.strokeStyle = `hsla(${config.hue}, 100%, 70%, ${opacity * 0.2})`;
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(particles[a].x, particles[a].y);
-          ctx.lineTo(particles[b].x, particles[b].y);
-          ctx.stroke();
-        }
-      }
-    }
-  }
+<!--        if (distance < config.connectionDistance) {-->
+<!--          const opacity = 1 - (distance / config.connectionDistance);-->
+<!--          ctx.strokeStyle = `hsla(${config.hue}, 100%, 70%, ${opacity * 0.2})`;-->
+<!--          ctx.lineWidth = 0.5;-->
+<!--          ctx.beginPath();-->
+<!--          ctx.moveTo(particles[a].x, particles[a].y);-->
+<!--          ctx.lineTo(particles[b].x, particles[b].y);-->
+<!--          ctx.stroke();-->
+<!--        }-->
+<!--      }-->
+<!--    }-->
+<!--  }-->
 
   // Gradient background
-  function drawBackground() {
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    gradient.addColorStop(0, 'rgba(5, 10, 20, 0.8)');
-    gradient.addColorStop(1, 'rgba(0, 30, 50, 0.5)');
-    
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
+<!--  function drawBackground() {-->
+<!--    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);-->
+<!--    gradient.addColorStop(0, 'rgba(5, 10, 20, 0.8)');-->
+<!--    gradient.addColorStop(1, 'rgba(0, 30, 50, 0.5)');-->
+
+<!--    ctx.fillStyle = gradient;-->
+<!--    ctx.fillRect(0, 0, canvas.width, canvas.height);-->
+<!--  }-->
 
   // Main animation loop
-  function animate() {
+<!--  function animate() {-->
     // Clear with semi-transparent for motion trails
-    ctx.fillStyle = 'rgba(5, 10, 20, 0.1)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+<!--    ctx.fillStyle = 'rgba(5, 10, 20, 0.1)';-->
+<!--    ctx.fillRect(0, 0, canvas.width, canvas.height);-->
+
     // Update hue for color cycling
-    config.hue += config.hueCycleSpeed;
-    if (config.hue > 360) config.hue = 0;
-    
+<!--    config.hue += config.hueCycleSpeed;-->
+<!--    if (config.hue > 360) config.hue = 0;-->
+
     // Draw elements
-    drawBackground();
-    connectParticles();
-    
+<!--    drawBackground();-->
+<!--    connectParticles();-->
+
     // Update and draw particles
-    particles.forEach(particle => {
-      particle.update();
-      particle.draw();
-    });
-    
-    requestAnimationFrame(animate);
-  }
+<!--    particles.forEach(particle => {-->
+<!--      particle.update();-->
+<!--      particle.draw();-->
+<!--    });-->
+
+<!--    requestAnimationFrame(animate);-->
+<!--  }-->
 
   // Handle window resize
-  function handleResize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    initParticles();
-  }
+<!--  function handleResize() {-->
+<!--    canvas.width = window.innerWidth;-->
+<!--    canvas.height = window.innerHeight;-->
+<!--    initParticles();-->
+<!--  }-->
 
   // Initialize and start animation
-  window.addEventListener('resize', handleResize);
-  initParticles();
-  animate();
+<!--  window.addEventListener('resize', handleResize);-->
+<!--  initParticles();-->
+<!--  animate();-->
 
   // Add interactive effects
-  document.addEventListener('click', (e) => {
+<!--  document.addEventListener('click', (e) => {-->
     // Create ripple effect on click
-    for (let i = 0; i < 10; i++) {
-      setTimeout(() => {
-        const p = new Particle();
-        p.x = e.clientX;
-        p.y = e.clientY;
-        p.vx = (Math.random() - 0.5) * 5;
-        p.vy = (Math.random() - 0.5) * 5;
-        p.size = Math.random() * 5 + 2;
-        p.alpha = 0.7;
-        particles.push(p);
-      }, i * 50);
-    }
-  });
-</script>
-{% endblock %}
+<!--    for (let i = 0; i < 10; i++) {-->
+<!--      setTimeout(() => {-->
+<!--        const p = new Particle();-->
+<!--        p.x = e.clientX;-->
+<!--        p.y = e.clientY;-->
+<!--        p.vx = (Math.random() - 0.5) * 5;-->
+<!--        p.vy = (Math.random() - 0.5) * 5;-->
+<!--        p.size = Math.random() * 5 + 2;-->
+<!--        p.alpha = 0.7;-->
+<!--        particles.push(p);-->
+<!--      }, i * 50);-->
+<!--    }-->
+<!--  });-->
+<!--</script>-->
+<!--{% endblock %}-->

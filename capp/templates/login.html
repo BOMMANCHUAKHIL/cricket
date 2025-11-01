@@ -1,361 +1,361 @@
-{% extends 'base.html' %}
-{% block title %}Login - SPL TeamSplitter Pro{% endblock %}
+<!--{% extends 'base.html' %}-->
+<!--{% block title %}Login - SPL TeamSplitter Pro{% endblock %}-->
 
-{% block content %}
+<!--{% block content %}-->
 <!-- 🌌 Futuristic Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Kanit:wght@400;600&display=swap" rel="stylesheet">
+<!--<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Kanit:wght@400;600&display=swap" rel="stylesheet">-->
 
-<style>
+<!--<style>-->
   /* 🌠 Cosmic Base Styles */
-  :root {
-    --neon-blue: #00f7ff;
-    --neon-purple: #9600ff;
-    --deep-space: #0a0a20;
-    --starlight: rgba(255, 255, 255, 0.9);
-  }
-  
-  body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-    font-family: 'Kanit', sans-serif;
-    background: var(--deep-space);
-    color: white;
-  }
+<!--  :root {-->
+<!--    --neon-blue: #00f7ff;-->
+<!--    --neon-purple: #9600ff;-->
+<!--    --deep-space: #0a0a20;-->
+<!--    --starlight: rgba(255, 255, 255, 0.9);-->
+<!--  }-->
+
+<!--  body, html {-->
+<!--    margin: 0;-->
+<!--    padding: 0;-->
+<!--    height: 100%;-->
+<!--    overflow: hidden;-->
+<!--    font-family: 'Kanit', sans-serif;-->
+<!--    background: var(--deep-space);-->
+<!--    color: white;-->
+<!--  }-->
 
   /* 🚀 Canvas Background */
-  #matrixCanvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    opacity: 0.7;
-  }
+<!--  #matrixCanvas {-->
+<!--    position: fixed;-->
+<!--    top: 0;-->
+<!--    left: 0;-->
+<!--    width: 100%;-->
+<!--    height: 100%;-->
+<!--    z-index: -1;-->
+<!--    opacity: 0.7;-->
+<!--  }-->
 
   /* 💎 Cyberpunk Card */
-  .cyber-card {
-    background: rgba(15, 15, 30, 0.3);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 16px;
-    padding: 2.5rem;
-    width: 100%;
-    max-width: 420px;
-    border: 1px solid rgba(0, 247, 255, 0.3);
-    box-shadow:
-      0 0 25px rgba(0, 247, 255, 0.2),
-      0 0 50px rgba(150, 0, 255, 0.15),
-      inset 0 0 15px rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
-    animation: float 6s ease-in-out infinite;
-  }
+<!--  .cyber-card {-->
+<!--    background: rgba(15, 15, 30, 0.3);-->
+<!--    backdrop-filter: blur(12px);-->
+<!--    -webkit-backdrop-filter: blur(12px);-->
+<!--    border-radius: 16px;-->
+<!--    padding: 2.5rem;-->
+<!--    width: 100%;-->
+<!--    max-width: 420px;-->
+<!--    border: 1px solid rgba(0, 247, 255, 0.3);-->
+<!--    box-shadow:-->
+<!--      0 0 25px rgba(0, 247, 255, 0.2),-->
+<!--      0 0 50px rgba(150, 0, 255, 0.15),-->
+<!--      inset 0 0 15px rgba(255, 255, 255, 0.1);-->
+<!--    position: relative;-->
+<!--    overflow: hidden;-->
+<!--    animation: float 6s ease-in-out infinite;-->
+<!--  }-->
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0) rotate(0.5deg); }
-    50% { transform: translateY(-15px) rotate(-0.5deg); }
-  }
+<!--  @keyframes float {-->
+<!--    0%, 100% { transform: translateY(0) rotate(0.5deg); }-->
+<!--    50% { transform: translateY(-15px) rotate(-0.5deg); }-->
+<!--  }-->
 
   /* 🛰️ Header Styles */
-  .login-header {
-    font-family: 'Orbitron', sans-serif;
-    text-align: center;
-    margin-bottom: 2rem;
-    position: relative;
-  }
+<!--  .login-header {-->
+<!--    font-family: 'Orbitron', sans-serif;-->
+<!--    text-align: center;-->
+<!--    margin-bottom: 2rem;-->
+<!--    position: relative;-->
+<!--  }-->
 
-  .login-title {
-    font-size: 2rem;
-    color: var(--neon-blue);
-    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
-    letter-spacing: 2px;
-    margin-bottom: 0.5rem;
-  }
+<!--  .login-title {-->
+<!--    font-size: 2rem;-->
+<!--    color: var(--neon-blue);-->
+<!--    text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);-->
+<!--    letter-spacing: 2px;-->
+<!--    margin-bottom: 0.5rem;-->
+<!--  }-->
 
-  .login-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    text-shadow: 0 0 15px var(--neon-blue);
-    animation: pulse 2s infinite alternate;
-  }
+<!--  .login-icon {-->
+<!--    font-size: 2.5rem;-->
+<!--    margin-bottom: 1rem;-->
+<!--    text-shadow: 0 0 15px var(--neon-blue);-->
+<!--    animation: pulse 2s infinite alternate;-->
+<!--  }-->
 
-  @keyframes pulse {
-    0% { opacity: 0.8; transform: scale(1); }
-    100% { opacity: 1; transform: scale(1.1); }
-  }
+<!--  @keyframes pulse {-->
+<!--    0% { opacity: 0.8; transform: scale(1); }-->
+<!--    100% { opacity: 1; transform: scale(1.1); }-->
+<!--  }-->
 
   /* 👨‍🚀 Form Elements */
-  .form-group {
-    margin-bottom: 1.5rem;
-    position: relative;
-  }
+<!--  .form-group {-->
+<!--    margin-bottom: 1.5rem;-->
+<!--    position: relative;-->
+<!--  }-->
 
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--neon-blue);
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-  }
+<!--  label {-->
+<!--    display: block;-->
+<!--    margin-bottom: 0.5rem;-->
+<!--    color: var(--neon-blue);-->
+<!--    font-size: 0.9rem;-->
+<!--    letter-spacing: 1px;-->
+<!--  }-->
 
-  input {
-    width: 100%;
-    padding: 12px 15px;
-    background: rgba(10, 10, 30, 0.7);
-    border: 1px solid rgba(0, 247, 255, 0.3);
-    border-radius: 8px;
-    color: white;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-  }
+<!--  input {-->
+<!--    width: 100%;-->
+<!--    padding: 12px 15px;-->
+<!--    background: rgba(10, 10, 30, 0.7);-->
+<!--    border: 1px solid rgba(0, 247, 255, 0.3);-->
+<!--    border-radius: 8px;-->
+<!--    color: white;-->
+<!--    font-size: 1rem;-->
+<!--    transition: all 0.3s ease;-->
+<!--  }-->
 
-  input:focus {
-    outline: none;
-    border-color: var(--neon-blue);
-    box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
-    background: rgba(20, 20, 50, 0.9);
-  }
+<!--  input:focus {-->
+<!--    outline: none;-->
+<!--    border-color: var(--neon-blue);-->
+<!--    box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);-->
+<!--    background: rgba(20, 20, 50, 0.9);-->
+<!--  }-->
 
   /* 🪐 Submit Button */
-  .btn-matrix {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-    margin-top: 1rem;
-  }
+<!--  .btn-matrix {-->
+<!--    width: 100%;-->
+<!--    padding: 14px;-->
+<!--    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));-->
+<!--    border: none;-->
+<!--    border-radius: 8px;-->
+<!--    color: white;-->
+<!--    font-family: 'Orbitron', sans-serif;-->
+<!--    font-size: 1rem;-->
+<!--    letter-spacing: 1px;-->
+<!--    cursor: pointer;-->
+<!--    transition: all 0.3s ease;-->
+<!--    position: relative;-->
+<!--    overflow: hidden;-->
+<!--    z-index: 1;-->
+<!--    margin-top: 1rem;-->
+<!--  }-->
 
-  .btn-matrix:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-      0 0 20px rgba(0, 247, 255, 0.5),
-      0 0 40px rgba(150, 0, 255, 0.3);
-  }
+<!--  .btn-matrix:hover {-->
+<!--    transform: translateY(-2px);-->
+<!--    box-shadow: -->
+<!--      0 0 20px rgba(0, 247, 255, 0.5),-->
+<!--      0 0 40px rgba(150, 0, 255, 0.3);-->
+<!--  }-->
 
-  .btn-matrix::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: 0.5s;
-    z-index: -1;
-  }
+<!--  .btn-matrix::before {-->
+<!--    content: '';-->
+<!--    position: absolute;-->
+<!--    top: 0;-->
+<!--    left: -100%;-->
+<!--    width: 100%;-->
+<!--    height: 100%;-->
+<!--    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);-->
+<!--    transition: 0.5s;-->
+<!--    z-index: -1;-->
+<!--  }-->
 
-  .btn-matrix:hover::before {
-    left: 100%;
-  }
+<!--  .btn-matrix:hover::before {-->
+<!--    left: 100%;-->
+<!--  }-->
 
   /* 🔗 Error Message */
-  .alert-matrix {
-    background: rgba(255, 50, 50, 0.2);
-    border: 1px solid rgba(255, 50, 50, 0.5);
-    color: #ffcccc;
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 1.5rem;
-    text-align: center;
-    backdrop-filter: blur(5px);
-  }
+<!--  .alert-matrix {-->
+<!--    background: rgba(255, 50, 50, 0.2);-->
+<!--    border: 1px solid rgba(255, 50, 50, 0.5);-->
+<!--    color: #ffcccc;-->
+<!--    padding: 12px;-->
+<!--    border-radius: 8px;-->
+<!--    margin-top: 1.5rem;-->
+<!--    text-align: center;-->
+<!--    backdrop-filter: blur(5px);-->
+<!--  }-->
 
   /* 🌐 Container */
-  .login-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
-</style>
+<!--  .login-container {-->
+<!--    display: flex;-->
+<!--    align-items: center;-->
+<!--    justify-content: center;-->
+<!--    min-height: 100vh;-->
+<!--    padding: 20px;-->
+<!--  }-->
+<!--</style>-->
 
 <!-- 🌌 Matrix Rain Canvas -->
-<canvas id="matrixCanvas"></canvas>
+<!--<canvas id="matrixCanvas"></canvas>-->
 
 <!-- 🚀 Main Content -->
-<div class="login-container">
-  <div class="cyber-card">
-    <div class="login-header">
-      <div class="login-icon">🔐</div>
-      <div class="login-title">SPL TEAMSPLITTER PRO</div>
-    </div>
-    
-    <form method="post">
-      {% csrf_token %}
-      <div class="form-group">
-        <label for="id_username">USERNAME</label>
-        <input type="text" id="id_username" name="username" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="id_password">PASSWORD</label>
-        <input type="password" id="id_password" name="password" required>
-      </div>
-      
-      <button type="submit" class="btn-matrix">ACCESS SYSTEM</button>
-    </form>
-    
-    {% if form.errors %}
-      <div class="alert-matrix">
-        ⚠️ Invalid credentials. Access denied.
-      </div>
-    {% endif %}
-  </div>
-</div>
+<!--<div class="login-container">-->
+<!--  <div class="cyber-card">-->
+<!--    <div class="login-header">-->
+<!--      <div class="login-icon">🔐</div>-->
+<!--      <div class="login-title">SPL TEAMSPLITTER PRO</div>-->
+<!--    </div>-->
+
+<!--    <form method="post">-->
+<!--      {% csrf_token %}-->
+<!--      <div class="form-group">-->
+<!--        <label for="id_username">USERNAME</label>-->
+<!--        <input type="text" id="id_username" name="username" required>-->
+<!--      </div>-->
+
+<!--      <div class="form-group">-->
+<!--        <label for="id_password">PASSWORD</label>-->
+<!--        <input type="password" id="id_password" name="password" required>-->
+<!--      </div>-->
+
+<!--      <button type="submit" class="btn-matrix">ACCESS SYSTEM</button>-->
+<!--    </form>-->
+
+<!--    {% if form.errors %}-->
+<!--      <div class="alert-matrix">-->
+<!--        ⚠️ Invalid credentials. Access denied.-->
+<!--      </div>-->
+<!--    {% endif %}-->
+<!--  </div>-->
+<!--</div>-->
 
 <!-- 🌌 Matrix Rain JavaScript -->
-<script>
+<!--<script>-->
   // Matrix Rain Effect
-  const canvas = document.getElementById('matrixCanvas');
-  const ctx = canvas.getContext('2d');
-  
+<!--  const canvas = document.getElementById('matrixCanvas');-->
+<!--  const ctx = canvas.getContext('2d');-->
+
   // Set canvas to full window size
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  
+<!--  canvas.width = window.innerWidth;-->
+<!--  canvas.height = window.innerHeight;-->
+
   // Matrix characters - taken from Katakana and Latin characters
-  const matrixChars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  
+<!--  const matrixChars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";-->
+
   // Set font size and calculate columns
-  const fontSize = 16;
-  const columns = canvas.width / fontSize;
-  
+<!--  const fontSize = 16;-->
+<!--  const columns = canvas.width / fontSize;-->
+
   // Create an array of drops - one per column
-  const drops = [];
-  for (let i = 0; i < columns; i++) {
-    drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
-  }
-  
+<!--  const drops = [];-->
+<!--  for (let i = 0; i < columns; i++) {-->
+<!--    drops[i] = Math.floor(Math.random() * canvas.height / fontSize);-->
+<!--  }-->
+
   // Draw the characters
-  function draw() {
+<!--  function draw() {-->
     // Black background with opacity for trail effect
-    ctx.fillStyle = 'rgba(5, 5, 15, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+<!--    ctx.fillStyle = 'rgba(5, 5, 15, 0.05)';-->
+<!--    ctx.fillRect(0, 0, canvas.width, canvas.height);-->
+
     // Set style for characters
     ctx.fillStyle = '#0f0'; // Matrix green
-    ctx.font = `${fontSize}px monospace`;
-    
+<!--    ctx.font = `${fontSize}px monospace`;-->
+
     // Loop over drops
-    for (let i = 0; i < drops.length; i++) {
+<!--    for (let i = 0; i < drops.length; i++) {-->
       // Get random character
-      const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
-      
+<!--      const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));-->
+
       // Draw character
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-      
+<!--      ctx.fillText(text, i * fontSize, drops[i] * fontSize);-->
+
       // Reset drop to top when it reaches bottom
       // Add randomness to make it look more organic
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-        drops[i] = 0;
-      }
-      
+<!--      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {-->
+<!--        drops[i] = 0;-->
+<!--      }-->
+
       // Move drop down
-      drops[i]++;
-    }
-  }
-  
+<!--      drops[i]++;-->
+<!--    }-->
+<!--  }-->
+
   // Animation loop
-  setInterval(draw, 33);
-  
+<!--  setInterval(draw, 33);-->
+
   // Handle window resize
-  window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+<!--  window.addEventListener('resize', () => {-->
+<!--    canvas.width = window.innerWidth;-->
+<!--    canvas.height = window.innerHeight;-->
     // Recalculate columns
-    const newColumns = canvas.width / fontSize;
+<!--    const newColumns = canvas.width / fontSize;-->
     // Adjust drops array
-    if (newColumns > drops.length) {
+<!--    if (newColumns > drops.length) {-->
       // Add new columns
-      for (let i = drops.length; i < newColumns; i++) {
-        drops[i] = Math.floor(Math.random() * canvas.height / fontSize);
-      }
-    } else if (newColumns < drops.length) {
+<!--      for (let i = drops.length; i < newColumns; i++) {-->
+<!--        drops[i] = Math.floor(Math.random() * canvas.height / fontSize);-->
+<!--      }-->
+<!--    } else if (newColumns < drops.length) {-->
       // Remove extra columns
-      drops.length = newColumns;
-    }
-  });
-  
+<!--      drops.length = newColumns;-->
+<!--    }-->
+<!--  });-->
+
   // Interactive effect - mouse creates waves in the matrix
-  let mouseX = null;
-  let mouseY = null;
-  
-  window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
-  
-  window.addEventListener('mouseout', () => {
-    mouseX = null;
-    mouseY = null;
-  });
-  
+<!--  let mouseX = null;-->
+<!--  let mouseY = null;-->
+
+<!--  window.addEventListener('mousemove', (e) => {-->
+<!--    mouseX = e.clientX;-->
+<!--    mouseY = e.clientY;-->
+<!--  });-->
+
+<!--  window.addEventListener('mouseout', () => {-->
+<!--    mouseX = null;-->
+<!--    mouseY = null;-->
+<!--  });-->
+
   // Enhanced drawing function with mouse interaction
-  function enhancedDraw() {
+<!--  function enhancedDraw() {-->
     // Black background with opacity for trail effect
-    ctx.fillStyle = 'rgba(5, 5, 15, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+<!--    ctx.fillStyle = 'rgba(5, 5, 15, 0.05)';-->
+<!--    ctx.fillRect(0, 0, canvas.width, canvas.height);-->
+
     // Set style for characters
     ctx.fillStyle = '#0f0'; // Matrix green
-    ctx.font = `${fontSize}px monospace`;
-    
+<!--    ctx.font = `${fontSize}px monospace`;-->
+
     // Loop over drops
-    for (let i = 0; i < drops.length; i++) {
+<!--    for (let i = 0; i < drops.length; i++) {-->
       // Get random character
-      const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
-      const x = i * fontSize;
-      const y = drops[i] * fontSize;
-      
+<!--      const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));-->
+<!--      const x = i * fontSize;-->
+<!--      const y = drops[i] * fontSize;-->
+
       // Mouse interaction - create wave effect
-      if (mouseX && mouseY) {
-        const dx = mouseX - x;
-        const dy = mouseY - y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < 100) {
+<!--      if (mouseX && mouseY) {-->
+<!--        const dx = mouseX - x;-->
+<!--        const dy = mouseY - y;-->
+<!--        const distance = Math.sqrt(dx * dx + dy * dy);-->
+
+<!--        if (distance < 100) {-->
           // Change color near mouse
-          ctx.fillStyle = `hsl(${120 + distance / 2}, 100%, 50%)`;
+<!--          ctx.fillStyle = `hsl(${120 + distance / 2}, 100%, 50%)`;-->
           // Push drops away from mouse
-          if (distance < 80) {
-            drops[i] += 0.5;
-          }
-        } else {
-          ctx.fillStyle = '#0f0';
-        }
-      }
-      
+<!--          if (distance < 80) {-->
+<!--            drops[i] += 0.5;-->
+<!--          }-->
+<!--        } else {-->
+<!--          ctx.fillStyle = '#0f0';-->
+<!--        }-->
+<!--      }-->
+
       // Draw character
-      ctx.fillText(text, x, y);
-      
+<!--      ctx.fillText(text, x, y);-->
+
       // Reset drop to top when it reaches bottom
-      if (y > canvas.height && Math.random() > 0.975) {
-        drops[i] = 0;
-      }
-      
+<!--      if (y > canvas.height && Math.random() > 0.975) {-->
+<!--        drops[i] = 0;-->
+<!--      }-->
+
       // Move drop down
-      drops[i]++;
-    }
-    
+<!--      drops[i]++;-->
+<!--    }-->
+
     // Call the next frame
-    requestAnimationFrame(enhancedDraw);
-  }
-  
+<!--    requestAnimationFrame(enhancedDraw);-->
+<!--  }-->
+
   // Start the enhanced animation
-  enhancedDraw();
-</script>
-{% endblock %}
+<!--  enhancedDraw();-->
+<!--</script>-->
+<!--{% endblock %}-->
