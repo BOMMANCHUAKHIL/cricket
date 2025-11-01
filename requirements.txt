@@ -4,5 +4,6 @@ whitenoise==6.7.0
 django-allauth==65.0.0
 django-widget-tweaks==1.5.0
 django-mathfilters==1.0.0
-cryptography==42.0.5
+cryptography>=42.0.0
 psycopg2-binary==2.9.10
+requests>=2.32.0
