@@ -50,7 +50,11 @@ class TeamSplitForm(forms.Form):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')  # get user from view
         super().__init__(*args, **kwargs)
-        self.fields['members'].queryset = Member.objects.filter(user=user)
+        if user:
+            # Order by selection status and position
+            self.fields['members'].queryset = Member.objects.filter(
+                user=user
+            ).order_by('-is_selected', '-last_selected', 'position')
 
 from django import forms
 from .models import Member
@@ -132,3 +136,47 @@ class BallEventForm(forms.ModelForm):
                 self.add_error('fielder', 'Please select a fielder for catch out')
 
             return cleaned_data
+
+from django import forms
+from .models import Member, BallEvent
+
+# Only import allauth forms if allauth is installed
+try:
+    from allauth.account.forms import LoginForm, SignupForm
+except ImportError:
+    # Fallback if allauth is not available
+    from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+    LoginForm = AuthenticationForm
+    SignupForm = UserCreationForm
+
+class CustomLoginForm(LoginForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['login'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter your email or username'
+        })
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter your password'
+        })
+
+class CustomSignupForm(SignupForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter your email'
+        })
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Choose a username'
+        })
+        self.fields['password1'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Create a password'
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Confirm your password'
+        })

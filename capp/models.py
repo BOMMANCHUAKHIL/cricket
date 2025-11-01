@@ -7,13 +7,25 @@ class Member(models.Model):
     name = models.CharField(max_length=100)
     position = models.IntegerField(default=0)  # For ordering
     is_captain = models.BooleanField(default=False)
+    is_selected = models.BooleanField(default=False)
+    last_selected = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.position + 1}: {self.name}{' (C)' if self.is_captain else ''}"
 
     class Meta:
-        ordering = ['position']
-        unique_together = ('user', 'position')  # Prevent same position for same user
+        ordering = ['-last_selected','position']
+        unique_together = ['user']  # Prevent same position for same user
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'name'],
+                name='unique_user_member_name'
+            ),
+            models.UniqueConstraint(
+                fields=['user', 'position'],
+                name='unique_user_position'
+            )
+        ]
 import uuid
 class Team(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -42,6 +54,9 @@ class Tournament(models.Model):
         help_text="When enabled, innings ends only when no batters remain"
     )
     completed = models.BooleanField(default=False)
+    # ADD THESE NEW FIELDS FOR LIVE STATUS
+    is_live = models.BooleanField(default=False)
+    last_activity = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
@@ -55,6 +70,17 @@ class Tournament(models.Model):
         # Implement your tournament winner logic here
         # This could be based on points, wins, etc.
         return None
+    @property
+    def status(self):
+        if self.completed:
+            return "Completed"
+        elif self.is_live:
+            return "Live"
+        else:
+            return "Upcoming"
+
+    class Meta:
+        ordering = ['-last_activity', '-created_at']
 
 
 class Match(models.Model):
@@ -75,6 +101,9 @@ class Match(models.Model):
         verbose_name="Single Batting Mode",
         help_text="When enabled, innings ends only when no batters remain"
     )
+    # ADD THESE NEW FIELDS FOR LIVE STATUS
+    is_live = models.BooleanField(default=False)
+    last_activity = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.team1.name} vs {self.team2.name} ({self.start_time.strftime('%Y-%m-%d %H:%M')}) - {self.total_overs} Overs"
@@ -86,6 +115,17 @@ class Match(models.Model):
 
     def is_completed(self):
         return self.current_ball_count() >= self.total_balls()
+    @property
+    def status(self):
+        if self.completed:
+            return "Completed"
+        elif self.is_live:
+            return "Live"
+        else:
+            return "Upcoming"
+
+    class Meta:
+        ordering = ['-last_activity', '-created_at']
 
 
 class BallEvent(models.Model):

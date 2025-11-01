@@ -6,102 +6,144 @@ from .models import Team, Member
 from .forms import TeamSplitForm
 import random
 import uuid
+from django.contrib import messages
 from .models import Tournament
 import itertools
+import random
+from collections import defaultdict
 @login_required
 def generate_teams(request):
     if request.method == 'POST':
+        if 'update_captains' in request.POST and request.POST['update_captains'] == '1':
+            # Only update captains when explicitly requested
+            for member in Member.objects.filter(user=request.user):
+                toggle_state = request.POST.get(f'captain_{member.id}') == 'on'
+                if member.is_captain != toggle_state:
+                    member.is_captain = toggle_state
+                    member.save()
+            messages.success(request, "Captain selections updated!")
+            return redirect('generate_teams')
+
         form = TeamSplitForm(request.POST, user=request.user)
         if form.is_valid():
-            # Get all members ordered by position
-            selected_members = form.cleaned_data['members']
-            members = Member.objects.filter(
-                user=request.user,
-                id__in=selected_members.values_list('id', flat=True)
-            ).order_by('position')
-
-            # Separate captains and regular members
-            captains = list(members.filter(is_captain=True))
-            regular_members = list(members.filter(is_captain=False))
-            total_members = len(captains) + len(regular_members)
-
-            # Validate inputs
-            if total_members == 0:
-                form.add_error('members', 'Please select at least one member')
-                return render(request, 'generate_teams.html', {'form': form})
-
-            # Set num_teams equal to number of captains
-            num_teams = len(captains) if captains else 1
-            if num_teams == 0:
-                # If no captains, create one team or promote top member as captain
-                num_teams = 1
-                if regular_members:
-                    captains = [regular_members[0]]
-                    regular_members = regular_members[1:]
-
-            if total_members < num_teams:
-                form.add_error('members', f'Not enough members ({total_members}) for {num_teams} teams')
-                return render(request, 'generate_teams.html', {'form': form})
-
-            generation_id = uuid.uuid4()
-            teams = []
-
-            # PHASE 1: Create teams with captains
-            for i in range(num_teams):
-                captain = captains[i] if i < len(captains) else None
-                team_name = f"{captain.name.upper()}'S TEAM" if captain else f"Team {i+1}"
-                team = Team.objects.create(
-                    name=team_name,
-                    user=request.user,
-                    generation_id=generation_id
+            try:
+                # Update last_selected for chosen members
+                selected_member_ids = list(form.cleaned_data['members'].values_list('id', flat=True))
+                Member.objects.filter(user=request.user).update(
+                    is_selected=False,
+                    last_selected=None
                 )
-                if captain:
-                    team.members.add(captain)
-                teams.append(team)
+                Member.objects.filter(
+                    user=request.user,
+                    id__in=selected_member_ids
+                ).update(
+                    is_selected=True,
+                    last_selected=timezone.now()
+                )
+                # Initialize random seed
+                random.seed()
 
-            # PHASE 2: Prepare all players (captains + regular)
-            all_players = captains + regular_members
-            remaining_players = [p for p in all_players if p not in [t.members.first() for t in teams if t.members.exists()]]
+                # Get max_shuffle value from form (default to 3)
+                max_shuffle = int(request.POST.get('max_shuffle', 3))
 
-            # PHASE 3: Position-based distribution with snake draft
-            remaining_players.sort(key=lambda x: x.position)
+                # Get selected members
+                selected_members = form.cleaned_data['members']
+                members = Member.objects.filter(
+                    user=request.user,
+                    id__in=selected_members.values_list('id', flat=True)
+                ).order_by('-last_selected','position')  # Sort by position ascending
 
-            # Distribute players in position order using snake draft
-            for i, player in enumerate(remaining_players):
-                # Snake draft pattern
-                if (i // num_teams) % 2 == 1:  # Reverse direction
-                    team_index = num_teams - 1 - (i % num_teams)
-                else:  # Forward direction
+                # Separate captains and regular members
+                captains = list(members.filter(is_captain=True))
+                regular_members = list(members.filter(is_captain=False))
+                total_members = len(members)
+
+                # Determine number of teams based on captains or user input
+                if captains:
+                    num_teams = len(captains)
+                else:
+                    # If no captains selected, get team count from form or default to 2
+                    num_teams = int(request.POST.get('num_teams', 2))
+                    # Ensure we don't create more teams than available members
+                    num_teams = min(num_teams, total_members)
+                    if num_teams < 1:
+                        num_teams = 1
+
+                # If no captains but we have teams, create empty captain list
+                if not captains and num_teams > 0:
+                    captains = [None] * num_teams
+
+                # Validate we have enough members for the requested teams
+                if total_members < num_teams:
+                    form.add_error(None, f'Not enough members ({total_members}) for {num_teams} teams')
+                    return render(request, 'generate_teams.html', {'form': form})
+
+                generation_id = uuid.uuid4()
+                teams = []
+
+                # PHASE 1: Create teams with captains
+                for i in range(num_teams):
+                    captain = captains[i] if i < len(captains) else None
+                    team_name = f"{captain.name.upper()}'S TEAM" if captain else f"Team {i+1}"
+                    team = Team.objects.create(
+                        name=team_name,
+                        user=request.user,
+                        generation_id=generation_id
+                    )
+                    if captain:
+                        team.members.add(captain)
+                    teams.append(team)
+
+                # PHASE 2: Position-based shuffling and distribution
+                # Group members into chunks based on max_shuffle
+                member_chunks = [regular_members[i:i + max_shuffle]
+                              for i in range(0, len(regular_members), max_shuffle)]
+
+                # Shuffle each chunk
+                for chunk in member_chunks:
+                    random.shuffle(chunk)
+
+                # Flatten the chunks back into a single list
+                shuffled_members = [member for chunk in member_chunks for member in chunk]
+
+                # PHASE 3: Distribute members to teams using round-robin
+                for i, member in enumerate(shuffled_members):
                     team_index = i % num_teams
+                    teams[team_index].members.add(member)
 
-                teams[team_index].members.add(player)
+                # PHASE 4: Final balancing
+                team_sizes = [t.members.count() for t in teams]
+                min_size = min(team_sizes)
+                max_size = max(team_sizes)
 
-            # Ensure equal counts
-            team_counts = [t.members.count() for t in teams]
-            min_count = min(team_counts)
-            max_count = max(team_counts)
+                while max_size - min_size > 1:
+                    largest_team = max(teams, key=lambda t: t.members.count())
+                    smallest_team = min(teams, key=lambda t: t.members.count())
+                    movable_players = [m for m in largest_team.members.all()
+                                     if not m.is_captain]
+                    if movable_players:
+                        # Move random player to help balance
+                        player_to_move = random.choice(movable_players)
+                        largest_team.members.remove(player_to_move)
+                        smallest_team.members.add(player_to_move)
+                    team_sizes = [t.members.count() for t in teams]
+                    min_size = min(team_sizes)
+                    max_size = max(team_sizes)
 
-            # Balance teams if needed (max 1 difference)
-            if max_count - min_count > 1:
-                for team in teams:
-                    while team.members.count() > min_count + 1:
-                        # Get members sorted by position (highest first)
-                        members = list(team.members.all().order_by('-position'))
-                        # Find first non-captain to move
-                        for member in members:
-                            if not member.is_captain:
-                                team.members.remove(member)
-                                # Add to smallest team
-                                smallest_team = min(teams, key=lambda t: t.members.count())
-                                smallest_team.members.add(member)
-                                break
+                request.session['latest_generation_id'] = str(generation_id)
+                return redirect('team_list')
 
-            request.session['latest_generation_id'] = str(generation_id)
-            return redirect('team_list')
+            except Exception as e:
+                messages.error(request, f"Error generating teams: {str(e)}")
+                return render(request, 'generate_teams.html', {'form': form})
 
     else:
-        initial_members = request.session.get('selected_members', [])
-        form = TeamSplitForm(user=request.user, initial={'members': initial_members})
+        selected_members = Member.objects.filter(
+            user=request.user,
+            is_selected=True
+        ).values_list('id', flat=True)
+        # initial_members = request.session.get('selected_members', [])
+        form = TeamSplitForm(user=request.user, initial={'members': selected_members})
 
     return render(request, 'generate_teams.html', {'form': form})
 
@@ -274,119 +316,237 @@ def add_member_to_team(request):
 
     return redirect('team_list')
 
-
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.db.models import Max
-from django.contrib import messages
-from .models import Member
-from .forms import MemberPairForm
 @login_required
 def add_members_in_pair(request):
-    # Get members for the logged-in user, with captains first
-    members = Member.objects.filter(user=request.user).order_by('-is_captain', 'position')
+    """
+    Combined view for adding members, managing list, and reordering
+    """
+    from django.db.models import Max
+    import json
+    from django.db import transaction
+
+    members = Member.objects.filter(user=request.user).order_by('position')
+
+    def find_existing_member(name):
+        """Find if a member with similar name exists and return the member object"""
+        clean_name = name.strip().lower()
+        existing_members = Member.objects.filter(user=request.user)
+        for member in existing_members:
+            if member.name.strip().lower() == clean_name:
+                return member
+        return None
 
     if request.method == 'POST':
+
+        # Handle single member insertion at specific position
+        if 'insert_member' in request.POST:
+            single_name = request.POST.get('single_name')
+            insert_position = request.POST.get('insert_position')
+            single_is_captain = 'single_is_captain' in request.POST
+
+            if single_name and insert_position:
+                requested_position = int(insert_position)  # User's requested position (1-based)
+                target_position = requested_position    # Internal 0-based position
+
+                try:
+                    with transaction.atomic():
+                        # Check if member with same name already exists
+                        existing_member = find_existing_member(single_name)
+                        old_position_info = ""
+                        final_position = requested_position  # Track the final position for message
+
+                        if existing_member:
+                            old_position = existing_member.position + 1
+                            # Store info about replacement
+                            old_position_info = f" (replaced member from position {old_position-2})"
+
+                            # If we're replacing an existing member, delete it first
+                            existing_member.delete()
+
+                            # Get current member count after deletion
+                            current_member_count = Member.objects.filter(user=request.user).count()
+
+                            # If the requested position is beyond current count + 1, adjust to end
+                            if requested_position > current_member_count:
+                                final_position = current_member_count
+                                target_position = requested_position
+                                old_position_info += f" - position adjusted from {requested_position} to {final_position}"
+                            else:
+                                # Re-index positions after deletion to ensure they're sequential
+                                members_after_deletion = Member.objects.filter(user=request.user).order_by('position')
+                                for idx, member in enumerate(members_after_deletion):
+                                    if member.position != idx:
+                                        member.position = idx
+                                        member.save()
+
+                                # Adjust target position if the deleted member was before our target
+                                if old_position < requested_position:
+                                    target_position = requested_position-1   # Adjust because we deleted one before
+                                else:
+                                    target_position = requested_position-1
+                        else:
+                            # For new member (not replacing), check if position is valid
+                            current_member_count = Member.objects.filter(user=request.user).count()
+
+                            # If requested position is beyond current count + 1, insert at end
+                            if requested_position > current_member_count:
+                                final_position = current_member_count
+                                target_position = current_member_count+2
+                                old_position_info = f" - position adjusted from {requested_position} to {final_position}"
+                            else:
+                                final_position = requested_position
+                                target_position = requested_position -1
+
+                        # Shift all members from target position onward to make space
+                        members_to_shift = Member.objects.filter(user=request.user, position__gte=target_position)
+                        for member in members_to_shift:
+                            member.position += 1
+                            member.save()
+
+                        # Create new member at the target position
+                        Member.objects.create(
+                            user=request.user,
+                            name=single_name.strip(),
+                            position=target_position,
+                            is_captain=single_is_captain
+                        )
+
+                    messages.success(request, f"Member '{single_name.strip()}' placed at position {final_position}{old_position_info}")
+                    return redirect('add_member')
+
+                except Exception as e:
+                    messages.error(request, f"Error inserting member: {str(e)}")
+                    return redirect('add_member')
+
+        # Handle captain updates from the member list
         if 'update_captains' in request.POST:
-            # Handle captain updates from the member list
-            Member.objects.filter(user=request.user).update(is_captain=False)
-            for member in members:
-                if f'captain_{member.id}' in request.POST:
-                    member.is_captain = True
-                    member.save()
-            messages.success(request, "Captain selections updated!")
-            return redirect('add_member')
+            try:
+                with transaction.atomic():
+                    # First, clear all captain flags
+                    Member.objects.filter(user=request.user).update(is_captain=False)
 
-        # Handle adding new members (your existing code)
-        form = MemberPairForm(request.POST)
-        if form.is_valid():
-            name1 = form.cleaned_data['name1']
-            name2 = form.cleaned_data['name2']
-            last_position = members.aggregate(max_pos=Max('position'))['max_pos'] or -1
+                    # Then set captain flags for selected members
+                    for member in members:
+                        captain_field = f'captain_{member.id}'
+                        if captain_field in request.POST and request.POST[captain_field] == 'on':
+                            member.is_captain = True
+                            member.save()
 
-            Member.objects.create(
-                user=request.user,
-                name=name1,
-                position=last_position + 1
-            )
-            Member.objects.create(
-                user=request.user,
-                name=name2,
-                position=last_position + 2
-            )
-            messages.success(request, "Members added successfully!")
-            return redirect('add_member')
-    else:
-        form = MemberPairForm()
+                messages.success(request, "Captain selections updated!")
+                return redirect('add_member')
+
+            except Exception as e:
+                messages.error(request, f"Error updating captains: {str(e)}")
+                return redirect('add_member')
+
+        # Handle adding new single member (at the end)
+        single_name = request.POST.get('single_name')
+        if single_name and 'insert_member' not in request.POST:
+            is_captain = 'single_is_captain' in request.POST
+
+            try:
+                with transaction.atomic():
+                    # Check if member with same name already exists
+                    existing_member = find_existing_member(single_name)
+
+                    if existing_member:
+                        old_position = existing_member.position + 1
+                        # Delete the existing member
+                        existing_member.delete()
+                        replacement_info = f" (replaced existing member from position {old_position})"
+                    else:
+                        replacement_info = ""
+
+                    # Get the maximum position safely (after potential deletion)
+                    max_position_result = Member.objects.filter(user=request.user).aggregate(max_pos=Max('position'))
+                    max_position = max_position_result['max_pos'] if max_position_result['max_pos'] is not None else -1
+                    new_position = max_position + 1
+
+                    # Create single member at the end
+                    Member.objects.create(
+                        user=request.user,
+                        name=single_name.strip(),
+                        position=new_position,
+                        is_captain=is_captain
+                    )
+
+                messages.success(request, f"Member '{single_name.strip()}' added at position {new_position + 1}{replacement_info}")
+                return redirect('add_member')
+
+            except Exception as e:
+                messages.error(request, f"Error adding member: {str(e)}")
+                return redirect('add_member')
 
     return render(request, 'add_member.html', {
-        'form': form,
         'members': members
     })
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Member
 from .forms import MemberForm
 
+@login_required
 def edit_member(request, member_id):
-    member = get_object_or_404(Member, id=member_id)
+    member = get_object_or_404(Member, id=member_id, user=request.user)
 
     if request.method == 'POST':
-        form = MemberForm(request.POST, instance=member)
-        if form.is_valid():
-            form.save()
-            return redirect('add_member')  # or another view
-    else:
-        form = MemberForm(instance=member)
+        name = request.POST.get('name')
+        is_captain = 'is_captain' in request.POST
 
-    return render(request, 'edit_member.html', {'form': form})
+        if name:
+            member.name = name
+            member.is_captain = is_captain
+            member.save()
+            messages.success(request, "Member updated successfully!")
+            return redirect('add_member')
+
+    return render(request, 'edit_member.html', {'member': member})
 
 
 
 
 
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
-from django.shortcuts import render, redirect
-import json
-from .models import Member
+# from django.contrib.auth.decorators import login_required
+# from django.views.decorators.http import require_http_methods
+# from django.shortcuts import render, redirect
+# import json
+# from .models import Member
 
-@login_required
-@require_http_methods(["GET", "POST"])
-def reorder_members(request):
-    members = Member.objects.filter(user=request.user).order_by('position')
+# @login_required
+# @require_http_methods(["GET", "POST"])
+# def reorder_members(request):
+#     members = Member.objects.filter(user=request.user).order_by('position')
 
-    bg_classes = ['bg-set-1', 'bg-set-2', 'bg-set-3']
-    for index, member in enumerate(members):
-        member.bg_class = bg_classes[index % 3]  # Rotate through the 3 colors
+#     bg_classes = ['bg-set-1', 'bg-set-2', 'bg-set-3']
+#     for index, member in enumerate(members):
+#         member.bg_class = bg_classes[index % 3]  # Rotate through the 3 colors
 
-    if request.method == "POST":
-        order_data = request.POST.get('order_data')
-        if order_data:
-            order_list = json.loads(order_data)
-            user_members = Member.objects.filter(user=request.user)
-            user_member_ids = set(user_members.values_list('id', flat=True))
+#     if request.method == "POST":
+#         order_data = request.POST.get('order_data')
+#         if order_data:
+#             order_list = json.loads(order_data)
+#             user_members = Member.objects.filter(user=request.user)
+#             user_member_ids = set(user_members.values_list('id', flat=True))
 
-            # Temporary offset to avoid unique constraint conflicts
-            temp_offset = 1000
-            for member_id in order_list:
-                if int(member_id) in user_member_ids:
-                    Member.objects.filter(id=member_id).update(position=temp_offset)
-                    temp_offset += 1
+#             # Temporary offset to avoid unique constraint conflicts
+#             temp_offset = 1000
+#             for member_id in order_list:
+#                 if int(member_id) in user_member_ids:
+#                     Member.objects.filter(id=member_id).update(position=temp_offset)
+#                     temp_offset += 1
 
-            # Final position update
-            for index, member_id in enumerate(order_list):
-                if int(member_id) in user_member_ids:
-                    Member.objects.filter(id=member_id).update(position=index)
+#             # Final position update
+#             for index, member_id in enumerate(order_list):
+#                 if int(member_id) in user_member_ids:
+#                     Member.objects.filter(id=member_id).update(position=index)
 
-        return redirect('reorder_members')
+#         return redirect('reorder_members')
 
-    # Refresh ordered members with bg_class assigned
-    members = Member.objects.filter(user=request.user).order_by('position')
-    for index, member in enumerate(members):
-        member.bg_class = bg_classes[index % 3]
+#     # Refresh ordered members with bg_class assigned
+#     members = Member.objects.filter(user=request.user).order_by('position')
+#     for index, member in enumerate(members):
+#         member.bg_class = bg_classes[index % 3]
 
-    return render(request, 'reorder.html', {'members': members})
+#     return render(request, 'reorder.html', {'members': members})
 
 
 
@@ -680,8 +840,38 @@ def should_end_innings(available_batters, match):
         return available_batters.count() < 2
 @login_required
 def record_ball(request, match_id):
-    match = get_object_or_404(Match, id=match_id, user=request.user)
-    request.session['current_match_id'] = match_id
+
+    # match = get_object_or_404(Match, id=match_id, user=request.user)
+    # request.session['current_match_id'] = match_id
+    # # Session keys
+    # session_key = f"freeze_teams_{match_id}"
+    # batting_key = f"batting_team_{match_id}"
+    # bowling_key = f"bowling_team_{match_id}"
+    # innings_started_key = f"second_innings_started_{match_id}"
+    # dismissed_players_key = f"dismissed_players_{match_id}"
+
+    # # Initialize session variables
+    # request.session.setdefault(batting_key, match.team1.id)
+    # request.session.setdefault(bowling_key, match.team2.id)
+    # request.session.setdefault(dismissed_players_key, [])
+
+    # # Get session values
+    # is_frozen = request.session.get(session_key, False)
+    # batting_team_id = request.session[batting_key]
+    # bowling_team_id = request.session[bowling_key]
+    # dismissed_players = request.session[dismissed_players_key]
+    # is_second_innings = request.session.get(innings_started_key, False)
+
+    # # Get Team objects
+    # batting_team = get_object_or_404(Team, id=batting_team_id, user=request.user)
+    # bowling_team = get_object_or_404(Team, id=bowling_team_id, user=request.user)
+    match = get_object_or_404(Match, id=match_id)
+    if not match.completed:
+        match.is_live = True
+        match.save()
+    # Only set session for logged-in users who own the match
+    if request.user.is_authenticated and match.user == request.user:
+        request.session['current_match_id'] = match_id
     # Session keys
     session_key = f"freeze_teams_{match_id}"
     batting_key = f"batting_team_{match_id}"
@@ -690,20 +880,30 @@ def record_ball(request, match_id):
     dismissed_players_key = f"dismissed_players_{match_id}"
 
     # Initialize session variables
-    request.session.setdefault(batting_key, match.team1.id)
-    request.session.setdefault(bowling_key, match.team2.id)
-    request.session.setdefault(dismissed_players_key, [])
+
+    # Initialize session variables only for match owner
+    if request.user.is_authenticated and match.user == request.user:
+        request.session.setdefault(batting_key, match.team1.id)
+        request.session.setdefault(bowling_key, match.team2.id)
+        request.session.setdefault(dismissed_players_key, [])
 
     # Get session values
-    is_frozen = request.session.get(session_key, False)
-    batting_team_id = request.session[batting_key]
-    bowling_team_id = request.session[bowling_key]
-    dismissed_players = request.session[dismissed_players_key]
-    is_second_innings = request.session.get(innings_started_key, False)
+    if request.user.is_authenticated and match.user == request.user:
+        is_frozen = request.session.get(session_key, False)
+        batting_team_id = request.session.get(batting_key, match.team1.id)
+        bowling_team_id = request.session.get(bowling_key, match.team2.id)
+        dismissed_players = request.session.get(dismissed_players_key, [])
+    else:
+        # Default values for public users
+        is_frozen = True  # Public users can't modify teams
+        batting_team_id = match.team1.id
+        bowling_team_id = match.team2.id
+        dismissed_players = []  # You might want to calculate this from ball events
+    is_second_innings = request.session.get(innings_started_key, False) if request.user.is_authenticated and match.user == request.user else False
 
     # Get Team objects
-    batting_team = get_object_or_404(Team, id=batting_team_id, user=request.user)
-    bowling_team = get_object_or_404(Team, id=bowling_team_id, user=request.user)
+    batting_team = get_object_or_404(Team, id=batting_team_id)
+    bowling_team = get_object_or_404(Team, id=bowling_team_id)
 
     # Get available players
     batting_team_members = batting_team.members.exclude(name__in=dismissed_players)
@@ -736,11 +936,13 @@ def record_ball(request, match_id):
         balls = len(events)
         wickets = sum(1 for e in events if e.is_dismissal())
         overs = f"{balls//6}.{balls%6}"
+        run_rate = round(runs / (balls/6), 2) if balls > 0 else 0  # Calculate run rate
         return {
             'runs': runs,
             'wickets': wickets,
             'balls': balls,
             'overs': overs,
+            'run_rate': run_rate,  # Add run rate
             'score': f"{runs}/{wickets} in {overs} overs"
         }
     first_stats = calculate_innings_stats(first_innings_events, 0)  # Don't use session dismissed count
@@ -1130,6 +1332,7 @@ def record_ball(request, match_id):
     if is_over_completed:
         over_number = (current_innings_balls + 1) // 6
         messages.success(request, f"Over {over_number} completed! Please change the bowler.", extra_tags="over_completed")
+
     context = {
         'form': form,
         'match': match,
@@ -1147,6 +1350,7 @@ def record_ball(request, match_id):
         'target_score': target_score,  # The target score (first innings + 1)
         'runs_needed': runs_needed,
         'team_size': batting_team.members.count(),
+        'is_match_owner': request.user.is_authenticated and match.user == request.user,
         'first_innings_balls': first_innings_balls,
         'second_innings_balls': second_innings_balls,
         'current_innings_balls': current_innings_balls,
@@ -1191,7 +1395,8 @@ from .models import Match, BallEvent
 
 @login_required
 def scorecard(request, match_id):
-    match = get_object_or_404(Match, id=match_id, user=request.user)
+    # match = get_object_or_404(Match, id=match_id, user=request.user)
+    match = get_object_or_404(Match, id=match_id)
 
     # Get all bowlers who have actually bowled in the match
     bowlers_in_match = BallEvent.objects.filter(match=match).values_list('bowler', flat=True).distinct()
@@ -1248,58 +1453,64 @@ def scorecard(request, match_id):
 from operator import itemgetter
 from django.db.models import Sum, Count
 
-@login_required
+from django.shortcuts import render, get_object_or_404
+from collections import defaultdict
+from .models import BallEvent, Match
+
 def leaderboard(request, match_id):
-    match = get_object_or_404(Match, id=match_id, user=request.user)
+    # match = get_object_or_404(Match, id=match_id, user=request.user)
+    match = get_object_or_404(Match, id=match_id)
     events = BallEvent.objects.filter(match=match)
 
-    batter_scores = {}
-    bowler_stats = {}
+    # 🏏 Batting Stats
+    batter_scores = defaultdict(int)
+    for event in events:
+        batter_scores[event.batsman] += event.runs
+
+    sorted_batters = sorted(batter_scores.items(), key=lambda x: x[1], reverse=True)
+    best_batter = sorted_batters[0] if sorted_batters else (None, 0)
+
+    # 🎯 Bowling Stats
+    bowler_stats = defaultdict(lambda: {'runs': 0, 'wickets': 0, 'balls': 0})
 
     for event in events:
-        # Batting logic
-        batter_scores[event.batsman] = batter_scores.get(event.batsman, 0) + event.runs
+        bowler = event.bowler
+        bowler_stats[bowler]['runs'] += event.runs
+        bowler_stats[bowler]['balls'] += 1
+        if event.is_catch or event.is_wicket:
+            bowler_stats[bowler]['wickets'] += 1
 
-        # Bowling logic
-        if event.bowler not in bowler_stats:
-            bowler_stats[event.bowler] = {'runs': 0, 'wickets': 0, 'balls': 0}
-        bowler_stats[event.bowler]['runs'] += event.runs
-        bowler_stats[event.bowler]['balls'] += 1
-        if event.is_catch:
-            bowler_stats[event.bowler]['wickets'] += 1
-    sorted_batters = sorted(batter_scores.items(), key=lambda x: x[1], reverse=True)
-    # ✅ Best Batter by Most Runs
-    best_batter = max(batter_scores.items(), key=lambda x: x[1], default=(None, 0))
+    # Calculate economy and add to stats
+    for bowler, stats in bowler_stats.items():
+        balls = stats['balls']
+        overs = balls / 6 if balls else 1
+        stats['economy'] = round(stats['runs'] / overs, 2) if overs else 99
 
-    # ✅ Best Bowler by Wickets, then Economy
-    def best_bowler_calc(bowler_stats):
-        best = None
-        for bowler, stats in bowler_stats.items():
-            wickets = stats['wickets']
-            runs = stats['runs']
-            balls = stats['balls']
-            economy = (runs / (balls / 6)) if balls else float('inf')
+    # 🏆 Sort bowlers by: wickets DESC, economy ASC, runs ASC
+    sorted_bowlers = sorted(
+        bowler_stats.items(),
+        key=lambda x: (-x[1]['wickets'], x[1]['economy'], x[1]['runs'])
+    )
 
-            if not best:
-                best = (bowler, stats, economy)
-            else:
-                best_wickets = best[1]['wickets']
-                best_economy = best[2]
+    best_bowler = sorted_bowlers[0] if sorted_bowlers else (None, {'runs': 0, 'wickets': 0, 'balls': 0, 'economy': 0})
 
-                if wickets > best_wickets or (wickets == best_wickets and economy < best_economy):
-                    best = (bowler, stats, economy)
-        return best[:2] if best else (None, {'runs': 0, 'wickets': 0, 'balls': 0})
-
-    best_bowler = best_bowler_calc(bowler_stats)
-
+    # 🧤 Fielder Stats (Catches)
+    fielder_stats = (
+        events.filter(is_catch=True, fielder__isnull=False)
+        .values('fielder')
+        .annotate(total_catches=Count('id'))
+        .order_by('-total_catches')
+    )
     return render(request, 'leaderboard.html', {
         'match': match,
         'batter_scores': batter_scores,
-        'bowler_stats': bowler_stats,
+        'bowler_stats': dict(sorted_bowlers),  # sends sorted version to template
         'best_batter': best_batter,
         'sorted_batters': sorted_batters,
         'best_bowler': best_bowler,
+        'fielder_stats': fielder_stats,  # 👈 Add this to template
     })
+
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -1384,7 +1595,7 @@ def leaderboard_view(request):
         })
 
     # Sort Economy in Descending Order (worst first)
-    economy_stats.sort(key=lambda x: x['economy'], reverse=True)
+    economy_stats.sort(key=lambda x: x['economy'])
 
     # 🔍 Best Bowler = wickets * 10 - economy
     bowler_scores = {}
@@ -1480,7 +1691,9 @@ def tournament_detail(request, tournament_id):
         tournament = get_object_or_404(Tournament, id=tournament_id, user=request.user)
         teams = tournament.teams.all()
         matches = Match.objects.filter(tournament=tournament).order_by('-created_at')
-
+        if not tournament.completed:
+            tournament.is_live = True
+            tournament.save()
         if request.method == 'POST':
             team1_id = request.POST.get('team1')
             team2_id = request.POST.get('team2')
@@ -1811,3 +2024,141 @@ def tournament_leaderboard(request, tournament_id):
         return render(request, 'error.html', {
             'error_message': "An error occurred while generating the leaderboard. Please try again later."
         }, status=500)
+
+# In your views.py
+@login_required
+def live_matches(request):
+    """View for all live matches grouped by user - Last 1 month only"""
+    from django.utils import timezone
+    from datetime import timedelta
+    from django.contrib.auth.models import User
+
+    recent_threshold = timezone.now() - timedelta(minutes=30)  # For live matches
+    one_month_ago = timezone.now() - timedelta(days=30)  # 1 month threshold
+
+    # Get all users who have matches in the last 1 month
+    users_with_recent_matches = User.objects.filter(
+        match__created_at__gte=one_month_ago
+    ).distinct()
+
+    matches_by_user = []
+    total_live_matches = 0
+    total_upcoming_matches = 0
+    total_completed_matches = 0
+
+    for user in users_with_recent_matches:
+        # Get matches for this user from last 1 month only
+        user_matches = Match.objects.filter(
+            user=user,
+            created_at__gte=one_month_ago  # This should filter out old matches
+        )
+
+        # Categorize matches
+        live_matches = user_matches.filter(
+            is_live=True,
+            last_activity__gte=recent_threshold
+        ).exclude(completed=True).select_related('team1', 'team2', 'tournament')
+
+        upcoming_matches = user_matches.filter(
+            is_live=False,
+            completed=False,
+            created_at__gte=one_month_ago  # Double check for upcoming matches
+        ).select_related('team1', 'team2', 'tournament')[:2]
+
+        completed_matches = user_matches.filter(
+            completed=True,
+            created_at__gte=one_month_ago  # Double check for completed matches
+        ).select_related('team1', 'team2', 'tournament')[:2]
+
+        # Update totals
+        total_live_matches += live_matches.count()
+        total_upcoming_matches += upcoming_matches.count()
+        total_completed_matches += completed_matches.count()
+
+        # Only include users who have matches in any category from last 1 month
+        if live_matches or upcoming_matches or completed_matches:
+            matches_by_user.append({
+                'user': user,
+                'live_matches': live_matches,
+                'upcoming_matches': upcoming_matches,
+                'completed_matches': completed_matches,
+            })
+
+    context = {
+        'matches_by_user': matches_by_user,
+        'total_live_matches': total_live_matches,
+        'total_upcoming_matches': total_upcoming_matches,
+        'total_completed_matches': total_completed_matches,
+    }
+
+    return render(request, 'live_matches.html', context)
+# In your views.py
+@login_required
+def live_tournaments(request):
+    """View for all tournaments grouped by user - Last 1 month only"""
+    from django.utils import timezone
+    from datetime import timedelta
+    from django.contrib.auth.models import User
+
+    one_month_ago = timezone.now() - timedelta(days=30)
+
+    # Get all users who have tournaments in the last 1 month
+    users_with_recent_tournaments = User.objects.filter(
+        tournament__created_at__gte=one_month_ago
+    ).distinct()
+
+    tournaments_by_user = []
+    total_live_tournaments = 0
+    total_upcoming_tournaments = 0
+    total_completed_tournaments = 0
+    total_teams = 0
+
+    for user in users_with_recent_tournaments:
+        # Get tournaments for this user from last 1 month only
+        user_tournaments = Tournament.objects.filter(
+            user=user,
+            created_at__gte=one_month_ago
+        )
+
+        # Categorize tournaments
+        live_tournaments = user_tournaments.filter(
+            is_live=True,
+            completed=False
+        ).prefetch_related('teams')
+
+        upcoming_tournaments = user_tournaments.filter(
+            is_live=False,
+            completed=False
+        ).prefetch_related('teams')[:5]
+
+        completed_tournaments = user_tournaments.filter(
+            completed=True
+        ).prefetch_related('teams')[:5]
+
+        # Update totals
+        total_live_tournaments += live_tournaments.count()
+        total_upcoming_tournaments += upcoming_tournaments.count()
+        total_completed_tournaments += completed_tournaments.count()
+
+        # Count teams across all tournaments
+        for tournament in user_tournaments:
+            total_teams += tournament.teams.count()
+
+        # Only include users who have tournaments in any category from last 1 month
+        if live_tournaments or upcoming_tournaments or completed_tournaments:
+            tournaments_by_user.append({
+                'user': user,
+                'live_tournaments': live_tournaments,
+                'upcoming_tournaments': upcoming_tournaments,
+                'completed_tournaments': completed_tournaments,
+            })
+
+    context = {
+        'tournaments_by_user': tournaments_by_user,
+        'total_live_tournaments': total_live_tournaments,
+        'total_upcoming_tournaments': total_upcoming_tournaments,
+        'total_completed_tournaments': total_completed_tournaments,
+        'total_teams': total_teams,
+    }
+
+    return render(request, 'live_tournaments.html', context)
