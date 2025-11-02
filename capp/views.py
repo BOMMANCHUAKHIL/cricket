@@ -671,9 +671,9 @@ duplicates = (
 # for dup in duplicates:
 #     print(f"Position {dup['position']} is used by {dup['pos_count']} members.")
 
-# duplicate_positions = [dup['position'] for dup in duplicates]
+duplicate_positions = [dup['position'] for dup in duplicates]
 
-# conflicting_members = Member.objects.filter(position__in=duplicate_positions).order_by('position')
+conflicting_members = Member.objects.filter(position__in=duplicate_positions).order_by('position')
 
 # for m in conflicting_members:
 #     print(f"{m.name} (Position: {m.position})")
