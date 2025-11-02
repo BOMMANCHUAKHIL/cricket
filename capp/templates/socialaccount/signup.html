@@ -23,7 +23,9 @@
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow: hidden;
+    min-height: 100vh;  /* Changed from height: 100% */
+    overflow-x: hidden;  /* Changed from overflow: hidden */
+    overflow-y: auto;
     font-family: 'Montserrat', sans-serif;
     background: var(--deep-space);
     color: white;
@@ -366,4 +368,5 @@
   // Start the animation
   draw();
 </script>
+
 {% endblock %}
