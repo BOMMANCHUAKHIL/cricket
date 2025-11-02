@@ -668,8 +668,8 @@ duplicates = (
     .filter(pos_count__gt=1)
 )
 
-for dup in duplicates:
-    print(f"Position {dup['position']} is used by {dup['pos_count']} members.")
+# for dup in duplicates:
+#     print(f"Position {dup['position']} is used by {dup['pos_count']} members.")
 
 duplicate_positions = [dup['position'] for dup in duplicates]
 
