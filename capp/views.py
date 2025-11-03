@@ -319,83 +319,55 @@ def add_member_to_team(request):
 @login_required
 def add_members_in_pair(request):
     """
-    Combined view for adding members, managing list, and reordering
+    Simplified view for adding members without complex constraints
     """
-    from django.db.models import Max
-    import json
-    from django.db import transaction
-
     members = Member.objects.filter(user=request.user).order_by('position')
-
-    def find_existing_member(name):
-        """Find if a member with similar name exists and return the member object"""
-        clean_name = name.strip().lower()
-        existing_members = Member.objects.filter(user=request.user)
-        for member in existing_members:
-            if member.name.strip().lower() == clean_name:
-                return member
-        return None
 
     if request.method == 'POST':
         # Handle single member insertion at specific position
         if 'insert_member' in request.POST:
-            single_name = request.POST.get('single_name')
+            single_name = request.POST.get('single_name', '').strip()
             insert_position = request.POST.get('insert_position')
             single_is_captain = 'single_is_captain' in request.POST
 
             if single_name and insert_position:
-                requested_position = int(insert_position)  # User's requested position (1-based)
-                target_position = requested_position - 1   # Internal 0-based position
-
                 try:
-                    with transaction.atomic():
-                        # Check if member with same name already exists
-                        existing_member = find_existing_member(single_name)
-                        old_position_info = ""
-                        final_position = requested_position  # Track the final position for message
+                    requested_position = int(insert_position)
+                    target_position = requested_position - 1  # Convert to 0-based
 
-                        if existing_member:
-                            old_position = existing_member.position + 1
-                            # Store info about replacement
-                            old_position_info = f" (replaced member from position {old_position})"
+                    # Delete any existing member at this position for this user
+                    Member.objects.filter(
+                        user=request.user, 
+                        position=target_position
+                    ).delete()
 
-                            # If we're replacing an existing member, delete it first
-                            existing_member.delete()
+                    # Create new member
+                    Member.objects.create(
+                        user=request.user,
+                        name=single_name,
+                        position=target_position,
+                        is_captain=single_is_captain
+                    )
 
-                        # Shift all members from target position onward to make space
-                        members_to_shift = Member.objects.filter(user=request.user, position__gte=target_position)
-                        for member in members_to_shift:
-                            member.position += 1
-                            member.save()
-
-                        # Create new member at the target position
-                        Member.objects.create(
-                            user=request.user,
-                            name=single_name.strip(),
-                            position=target_position,
-                            is_captain=single_is_captain
-                        )
-
-                    messages.success(request, f"Member '{single_name.strip()}' placed at position {final_position}{old_position_info}")
+                    messages.success(request, f"Member '{single_name}' placed at position {requested_position}")
                     return redirect('add_member')
 
                 except Exception as e:
                     messages.error(request, f"Error inserting member: {str(e)}")
                     return redirect('add_member')
 
-        # Handle captain updates from the member list
+        # Handle captain updates
         if 'update_captains' in request.POST:
             try:
-                with transaction.atomic():
-                    # First, clear all captain flags
-                    Member.objects.filter(user=request.user).update(is_captain=False)
-
-                    # Then set captain flags for selected members
-                    for member in members:
-                        captain_field = f'captain_{member.id}'
-                        if captain_field in request.POST and request.POST[captain_field] == 'on':
-                            member.is_captain = True
-                            member.save()
+                # Clear all captain flags
+                Member.objects.filter(user=request.user).update(is_captain=False)
+                
+                # Set new captain flags
+                for member in members:
+                    captain_field = f'captain_{member.id}'
+                    if captain_field in request.POST and request.POST[captain_field] == 'on':
+                        member.is_captain = True
+                        member.save()
 
                 messages.success(request, "Captain selections updated!")
                 return redirect('add_member')
@@ -404,48 +376,9 @@ def add_members_in_pair(request):
                 messages.error(request, f"Error updating captains: {str(e)}")
                 return redirect('add_member')
 
-        # Handle adding new single member (at the end)
-        single_name = request.POST.get('single_name')
-        if single_name and 'insert_member' not in request.POST:
-            is_captain = 'single_is_captain' in request.POST
-
-            try:
-                with transaction.atomic():
-                    # Check if member with same name already exists
-                    existing_member = find_existing_member(single_name)
-
-                    if existing_member:
-                        old_position = existing_member.position + 1
-                        # Delete the existing member
-                        existing_member.delete()
-                        replacement_info = f" (replaced existing member from position {old_position})"
-                    else:
-                        replacement_info = ""
-
-                    # Get the maximum position safely (after potential deletion)
-                    max_position_result = Member.objects.filter(user=request.user).aggregate(max_pos=Max('position'))
-                    max_position = max_position_result['max_pos'] if max_position_result['max_pos'] is not None else -1
-                    new_position = max_position + 1
-
-                    # Create single member at the end
-                    Member.objects.create(
-                        user=request.user,
-                        name=single_name.strip(),
-                        position=new_position,
-                        is_captain=is_captain
-                    )
-
-                messages.success(request, f"Member '{single_name.strip()}' added at position {new_position + 1}{replacement_info}")
-                return redirect('add_member')
-
-            except Exception as e:
-                messages.error(request, f"Error adding member: {str(e)}")
-                return redirect('add_member')
-
     return render(request, 'add_member.html', {
         'members': members
     })
-
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Member
