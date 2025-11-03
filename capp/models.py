@@ -15,7 +15,7 @@ class Member(models.Model):
 
     class Meta:
         ordering = ['-last_selected','position']
-        unique_together = ['user']  # Prevent same position for same user
+        # unique_together = ['user']  # Prevent same position for same user
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'name'],
