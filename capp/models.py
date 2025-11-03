@@ -15,17 +15,7 @@ class Member(models.Model):
 
     class Meta:
         ordering = ['-last_selected','position']
-        # unique_together = ['user']  # Prevent same position for same user
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=['user', 'name'],
-        #         name='unique_user_member_name'
-        #     ),
-        #     models.UniqueConstraint(
-        #         fields=['user', 'position'],
-        #         name='unique_user_position'
-        #     )
-        # ]
+        
 import uuid
 class Team(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
