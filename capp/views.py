@@ -316,7 +316,6 @@ def add_member_to_team(request):
 
     return redirect('team_list')
 
-
 @login_required
 def add_members_in_pair(request):
     """
@@ -481,6 +480,8 @@ def add_members_in_pair(request):
     return render(request, 'add_member.html', {
         'members': members
     })
+
+
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Member
 from .forms import MemberForm
