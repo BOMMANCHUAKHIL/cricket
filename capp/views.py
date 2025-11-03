@@ -337,7 +337,6 @@ def add_members_in_pair(request):
         return None
 
     if request.method == 'POST':
-
         # Handle single member insertion at specific position
         if 'insert_member' in request.POST:
             single_name = request.POST.get('single_name')
@@ -346,7 +345,7 @@ def add_members_in_pair(request):
 
             if single_name and insert_position:
                 requested_position = int(insert_position)  # User's requested position (1-based)
-                target_position = requested_position    # Internal 0-based position
+                target_position = requested_position - 1   # Internal 0-based position
 
                 try:
                     with transaction.atomic():
@@ -358,44 +357,10 @@ def add_members_in_pair(request):
                         if existing_member:
                             old_position = existing_member.position + 1
                             # Store info about replacement
-                            old_position_info = f" (replaced member from position {old_position-2})"
+                            old_position_info = f" (replaced member from position {old_position})"
 
                             # If we're replacing an existing member, delete it first
                             existing_member.delete()
-
-                            # Get current member count after deletion
-                            current_member_count = Member.objects.filter(user=request.user).count()
-
-                            # If the requested position is beyond current count + 1, adjust to end
-                            if requested_position > current_member_count:
-                                final_position = current_member_count
-                                target_position = requested_position
-                                old_position_info += f" - position adjusted from {requested_position} to {final_position}"
-                            else:
-                                # Re-index positions after deletion to ensure they're sequential
-                                members_after_deletion = Member.objects.filter(user=request.user).order_by('position')
-                                for idx, member in enumerate(members_after_deletion):
-                                    if member.position != idx:
-                                        member.position = idx
-                                        member.save()
-
-                                # Adjust target position if the deleted member was before our target
-                                if old_position < requested_position:
-                                    target_position = requested_position-1   # Adjust because we deleted one before
-                                else:
-                                    target_position = requested_position-1
-                        else:
-                            # For new member (not replacing), check if position is valid
-                            current_member_count = Member.objects.filter(user=request.user).count()
-
-                            # If requested position is beyond current count + 1, insert at end
-                            if requested_position > current_member_count:
-                                final_position = current_member_count
-                                target_position = current_member_count+2
-                                old_position_info = f" - position adjusted from {requested_position} to {final_position}"
-                            else:
-                                final_position = requested_position
-                                target_position = requested_position -1
 
                         # Shift all members from target position onward to make space
                         members_to_shift = Member.objects.filter(user=request.user, position__gte=target_position)
