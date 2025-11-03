@@ -346,7 +346,7 @@ def add_members_in_pair(request):
 
             if single_name and insert_position:
                 requested_position = int(insert_position)  # User's requested position (1-based)
-                target_position = requested_position   # Internal 0-based position
+                target_position = requested_position-1   # Internal 0-based position
 
                 try:
                     with transaction.atomic():
@@ -358,7 +358,7 @@ def add_members_in_pair(request):
                         if existing_member:
                             old_position = existing_member.position + 1
                             # Store info about replacement
-                            old_position_info = f" (replaced member from position {old_position-2})"
+                            old_position_info = f" (replaced member from position {old_position})"
 
                             # If we're replacing an existing member, delete it first
                             existing_member.delete()
@@ -389,9 +389,9 @@ def add_members_in_pair(request):
                             current_member_count = Member.objects.filter(user=request.user).count()
 
                             # If requested position is beyond current count + 1, insert at end
-                            if requested_position > current_member_count:
-                                final_position = current_member_count
-                                target_position = current_member_count+2
+                            if requested_position > current_member_count+:
+                                final_position = current_member_count+1
+                                target_position = current_member_count
                                 old_position_info = f" - position adjusted from {requested_position} to {final_position}"
                             else:
                                 final_position = requested_position
