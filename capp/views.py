@@ -346,7 +346,7 @@ def add_members_in_pair(request):
 
             if single_name and insert_position:
                 requested_position = int(insert_position)  # User's requested position (1-based)
-                target_position = requested_position    # Internal 0-based position
+                target_position = requested_position-1    # Internal 0-based position
 
                 try:
                     with transaction.atomic():
@@ -357,7 +357,7 @@ def add_members_in_pair(request):
 
                         if existing_member:
                             old_position = existing_member.position + 1
-                            # Store info about replacement
+                            # Store info about replacement7
                             old_position_info = f" (replaced member from position {old_position-2})"
 
                             # If we're replacing an existing member, delete it first
@@ -369,7 +369,7 @@ def add_members_in_pair(request):
                             # If the requested position is beyond current count + 1, adjust to end
                             if requested_position > current_member_count:
                                 final_position = current_member_count
-                                target_position = requested_position
+                                target_position = requested_position+1
                                 old_position_info += f" - position adjusted from {requested_position} to {final_position}"
                             else:
                                 # Re-index positions after deletion to ensure they're sequential
@@ -381,9 +381,9 @@ def add_members_in_pair(request):
 
                                 # Adjust target position if the deleted member was before our target
                                 if old_position < requested_position:
-                                    target_position = requested_position-1   # Adjust because we deleted one before
+                                    target_position = requested_position   # Adjust because we deleted one before
                                 else:
-                                    target_position = requested_position-1
+                                    target_position = requested_position
                         else:
                             # For new member (not replacing), check if position is valid
                             current_member_count = Member.objects.filter(user=request.user).count()
@@ -391,14 +391,14 @@ def add_members_in_pair(request):
                             # If requested position is beyond current count + 1, insert at end
                             if requested_position > current_member_count:
                                 final_position = current_member_count
-                                target_position = current_member_count+2
+                                target_position = current_member_count+3
                                 old_position_info = f" - position adjusted from {requested_position} to {final_position}"
                             else:
                                 final_position = requested_position
-                                target_position = requested_position -1
+                                target_position = requested_position 
 
                         # Shift all members from target position onward to make space
-                        members_to_shift = Member.objects.filter(user=request.user, position__gte=target_position)
+                        members_to_shift = Member.objects.filter(user=request.user, position__gte=target_position+1)
                         for member in members_to_shift:
                             member.position += 1
                             member.save()
@@ -407,7 +407,7 @@ def add_members_in_pair(request):
                         Member.objects.create(
                             user=request.user,
                             name=single_name.strip(),
-                            position=target_position,
+                            position=target_position+1,
                             is_captain=single_is_captain
                         )
 
