@@ -367,8 +367,8 @@ def add_members_in_pair(request):
                             current_member_count = Member.objects.filter(user=request.user).count()
 
                             # If the requested position is beyond current count + 1, adjust to end
-                            if requested_position > current_member_count:
-                                final_position = current_member_count
+                            if requested_position > current_member_count+1:
+                                final_position = current_member_count +1
                                 target_position = requested_position
                                 old_position_info += f" - position adjusted from {requested_position} to {final_position}"
                             else:
