@@ -60,6 +60,9 @@ def generate_teams(request):
 
                 # Determine number of teams based on captains or user input
                 if captains:
+                    if len(captains) < 2:
+                        form.add_error(None, 'Please select at least two captains from the selected members')
+                        return render(request, 'generate_teams.html', {'form': form})
                     num_teams = len(captains)
                 else:
                     # If no captains selected, get team count from form or default to 2
