@@ -1531,19 +1531,20 @@ if (elements.rangeInput) {
     }
 
     // Check if at least two captains are selected when captains are visible/used
-    const selectedCaptains = Array.from(document.querySelectorAll('.captain-toggle-option input[type="checkbox"]:checked'));
-    const hasCaptains = selectedCaptains.length > 0;
-
-    if (hasCaptains) {
+    // Check captain selection logic
+    const captainTogglesExist = document.querySelectorAll('.captain-toggle-option input[type="checkbox"]').length > 0;
+    
+    if (captainTogglesExist) {
         // Count how many captains are actually selected as members
-        const selectedCaptainCount = selectedCaptains.filter(captainToggle => {
-            const memberCheckbox = captainToggle.closest('.member-checkbox-container')
-                .querySelector('.member-checkbox-input');
-            return memberCheckbox.checked;
-        }).length;
+        const selectedCaptains = Array.from(document.querySelectorAll('.captain-toggle-option input[type="checkbox"]:checked'))
+            .filter(captainToggle => {
+                const memberCheckbox = captainToggle.closest('.member-checkbox-container')
+                    .querySelector('.member-checkbox-input');
+                return memberCheckbox.checked;
+            });
 
-        // Require at least 2 captains
-        if (selectedCaptainCount < 2) {
+        // If at least one captain is selected, we need at least 2
+        if (selectedCaptains.length > 0 && selectedCaptains.length < 2) {
             e.preventDefault();
             alert('Please select at least two captains from the selected members');
             elements.form.classList.remove('submitting');
