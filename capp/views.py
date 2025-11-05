@@ -439,43 +439,6 @@ def add_members_in_pair(request):
                 messages.error(request, f"Error updating captains: {str(e)}")
                 return redirect('add_member')
 
-        # Handle adding new single member (at the end)
-        single_name = request.POST.get('single_name')
-        if single_name and 'insert_member' not in request.POST:
-            is_captain = 'single_is_captain' in request.POST
-
-            try:
-                with transaction.atomic():
-                    # Check if member with same name already exists
-                    existing_member = find_existing_member(single_name)
-
-                    if existing_member:
-                        old_position = existing_member.position + 1
-                        # Delete the existing member
-                        existing_member.delete()
-                        replacement_info = f" (replaced existing member from position {old_position})"
-                    else:
-                        replacement_info = ""
-
-                    # Get the maximum position safely (after potential deletion)
-                    max_position_result = Member.objects.filter(user=request.user).aggregate(max_pos=Max('position'))
-                    max_position = max_position_result['max_pos'] if max_position_result['max_pos'] is not None else -1
-                    new_position = max_position + 1
-
-                    # Create single member at the end
-                    Member.objects.create(
-                        user=request.user,
-                        name=single_name.strip(),
-                        position=new_position,
-                        is_captain=is_captain
-                    )
-
-                messages.success(request, f"Member '{single_name.strip()}' added at position {new_position + 1}{replacement_info}")
-                return redirect('add_member')
-
-            except Exception as e:
-                messages.error(request, f"Error adding member: {str(e)}")
-                return redirect('add_member')
 
     return render(request, 'add_member.html', {
         'members': members
