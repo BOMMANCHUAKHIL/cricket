@@ -17,7 +17,7 @@
 
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-9">
-         
+         {% comment %}
             <!-- Animated Messages -->
             {% if messages %}
                 {% for message in messages %}
@@ -30,6 +30,7 @@
                 </div>
                 {% endfor %}
             {% endif %}
+            {% endcomment %}
            
 
             <!-- Insert Member Card - Glass Morphism -->
@@ -1078,3 +1079,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
